@@ -1,10 +1,32 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  Provider,
+  ValidationPipe,
+} from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ChatModule } from './chat/chat.module';
+import { logger } from './middleware/logger.middleware';
+
+const ValidationPipeProvider: Provider = {
+  provide: APP_PIPE,
+  useValue: new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+  }),
+};
 
 @Module({
-  imports: [],
+  imports: [ChatModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [ValidationPipeProvider],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  // MARK: - Initialization
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(logger).forRoutes('*');
+  }
+}
