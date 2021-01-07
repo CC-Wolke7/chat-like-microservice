@@ -1,5 +1,8 @@
 yarn.lock
 .prettierignore
+Dockerfile
+.dockerignore
+Makefile
 node_modules/
 dist/
 coverage/
