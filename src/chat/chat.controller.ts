@@ -46,9 +46,6 @@ export class ChatController {
     @Param('chatId', ParseUUIDPipe, ChatByUUIDPipe, IsChatParticipantGuard)
     chat: Chat,
   ): Promise<ChatMessage[]> {
-    // @TODO: check whether chat exists
-    // throw new NotFoundException();
-
     // @TODO: check whether authenticated user is participant in chat
     // throw new ForbiddenException();
 
@@ -61,17 +58,14 @@ export class ChatController {
     chat: Chat,
     @Body() payload: CreateMessagePayload,
   ): Promise<ChatMessage> {
-    // @TODO: check whether chat exists
-    // throw new NotFoundException();
-
     // @TODO: check whether authenticated user is participant in chat
     // throw new ForbiddenException();
 
     const { message } = payload;
 
     return this.chatService.createMesage(
-      this.authenticatedUser,
       chat.uuid,
+      this.authenticatedUser,
       message,
     );
   }
