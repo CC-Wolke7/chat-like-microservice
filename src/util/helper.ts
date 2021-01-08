@@ -1,3 +1,5 @@
+import * as uuid from 'uuid';
+
 export function equalSet<T>(setA: Set<T>, setB: Set<T>): boolean {
   if (setA.size !== setB.size) {
     return false;
@@ -10,4 +12,8 @@ export function equalSet<T>(setA: Set<T>, setB: Set<T>): boolean {
   }
 
   return true;
+}
+
+export function isValidUUID(input: string, version: number): boolean {
+  return uuid.validate(input) && uuid.version(input) == version;
 }
