@@ -15,5 +15,5 @@ export function equalSet<T>(setA: Set<T>, setB: Set<T>): boolean {
 }
 
 export function isValidUUID(input: string, version: number): boolean {
-  return uuid.validate(input) && uuid.version(input) == version;
+  return uuid.validate(input) && uuid.version(input) === version;
 }

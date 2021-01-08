@@ -48,7 +48,7 @@ export class ChatService {
   }
 
   async getMessages(chat: ChatUUID): Promise<ChatMessage[]> {
-    return this.storage.findMessages((message) => message.chat == chat);
+    return this.storage.findMessages((message) => message.chat === chat);
   }
 
   async createMesage(
