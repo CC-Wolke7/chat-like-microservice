@@ -8,17 +8,36 @@ import {
 } from '../src/chat/interfaces/dto';
 import { Chat, ChatMessage } from '../src/chat/interfaces/storage';
 import { equalSet, isValidUUID } from '../src/util/helper';
+import { ProviderToken } from '../src/provider';
+import { ChatStorageMock } from '../src/chat/__mocks__/chat.storage';
+import { ServiceTokenGuard } from '../src/auth/service-token/service-token.guard';
+import { ServiceTokenGuardMock } from '../src/auth/__mocks__/service-token.guard';
+import {
+  ServiceAccountName,
+  ServiceAccountUser,
+} from '../src/auth/interfaces/service-account';
+import { UserType } from '../src/auth/interfaces/user';
 
-describe('ChatController (e2e)', () => {
+describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties
   let app: INestApplication;
-  const authenticatedUser = '84086a8b-9479-44f7-8ad1-73fc1ae3d8ef';
+
+  const user: ServiceAccountUser = {
+    type: UserType.ServiceAccount,
+    name: ServiceAccountName.UnitTest,
+    uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
+  };
 
   // MARK: - Setup
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(ProviderToken.CHAT_STORAGE)
+      .useClass(ChatStorageMock)
+      .overrideGuard(ServiceTokenGuard)
+      .useValue(new ServiceTokenGuardMock(user))
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -99,9 +118,9 @@ describe('ChatController (e2e)', () => {
     expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
 
     expect(isValidUUID(chat.uuid, 4)).toBeTruthy();
-    expect(chat.creator).toEqual(authenticatedUser);
+    expect(chat.creator).toEqual(user.uuid);
     expect(chat.participants).toEqual([
-      authenticatedUser,
+      user.uuid,
       'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
       '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
     ]); // creator listed first
@@ -118,7 +137,7 @@ describe('ChatController (e2e)', () => {
       participants: [
         'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
         '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
-        authenticatedUser,
+        user.uuid,
       ],
     };
 
@@ -130,7 +149,7 @@ describe('ChatController (e2e)', () => {
     const chat = createChatResponse.body as Chat;
 
     return expect(chat.participants).toEqual([
-      authenticatedUser,
+      user.uuid,
       'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
       '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
     ]); // creator listed first
@@ -248,7 +267,8 @@ describe('ChatController (e2e)', () => {
 
     expect(isValidUUID(message.uuid, 4)).toBeTruthy();
     expect(message.chat).toEqual(chat.uuid);
-    expect(message.sender).toEqual(authenticatedUser);
+    expect(message.sender).toEqual(user.uuid);
+    // @TODO: validate date string format
     // expect(message.date).toBe(expect.any(Date));
     expect(message.body).toEqual(createMessagePayload.message);
 

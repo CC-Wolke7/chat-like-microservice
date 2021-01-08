@@ -18,11 +18,15 @@ export interface ChatMessage {
 }
 
 // MARK: - Provider
+export type ChatFilter = (chat: Chat) => boolean;
+export type ChatMessageFilter = (message: ChatMessage) => boolean;
+
 export interface ChatStorageProvider {
-  findChats(filter: (chat: Chat) => boolean): Promise<Chat[]>;
+  findChat(filter: ChatFilter): Promise<Chat | undefined>;
+  findChats(filter: ChatFilter): Promise<Chat[]>;
   createChat(chat: Omit<Chat, 'uuid'>): Promise<Chat>;
-  findMessages(
-    filter: (message: ChatMessage) => boolean,
-  ): Promise<ChatMessage[]>;
+
+  findMessage(filter: ChatMessageFilter): Promise<ChatMessage | undefined>;
+  findMessages(filter: ChatMessageFilter): Promise<ChatMessage[]>;
   createMessage(message: Omit<ChatMessage, 'uuid'>): Promise<ChatMessage>;
 }

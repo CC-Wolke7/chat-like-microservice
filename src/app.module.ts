@@ -9,6 +9,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { ChatModule } from './chat/chat.module';
 import { logger } from './middleware/logger.middleware';
+import { AuthModule } from './auth/auth.module';
 
 const ValidationPipeProvider: Provider = {
   provide: APP_PIPE,
@@ -20,7 +21,7 @@ const ValidationPipeProvider: Provider = {
 };
 
 @Module({
-  imports: [ChatModule],
+  imports: [AuthModule, ChatModule],
   controllers: [AppController],
   providers: [ValidationPipeProvider],
 })

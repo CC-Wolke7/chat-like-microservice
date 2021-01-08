@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ChatStorageProvider, Chat, ChatMessage } from '../interfaces/storage';
+import {
+  ChatStorageProvider,
+  Chat,
+  ChatMessage,
+  ChatFilter,
+  ChatMessageFilter,
+} from '../interfaces/storage';
 import { v4 as uuidv4 } from 'uuid';
 // import { CHATS, CHAT_MESSAGES } from './data';
 
@@ -9,7 +15,13 @@ export class ChatStorageMock implements ChatStorageProvider {
   private chats: Chat[] = []; // = CHATS;
   private messages: ChatMessage[] = []; // = CHAT_MESSAGES;
 
-  // MARK: - Public Properties
+  // MARK: - Public Methods
+  async findChat(filter: ChatFilter): Promise<Chat | undefined> {
+    const chats = await this.findChats(filter);
+
+    return this.getFirstOrNone(chats);
+  }
+
   async findChats(filter: (chat: Chat) => boolean): Promise<Chat[]> {
     return this.chats.filter(filter);
   }
@@ -23,9 +35,15 @@ export class ChatStorageMock implements ChatStorageProvider {
     return chat;
   }
 
-  async findMessages(
-    filter: (message: ChatMessage) => boolean,
-  ): Promise<ChatMessage[]> {
+  async findMessage(
+    filter: ChatMessageFilter,
+  ): Promise<ChatMessage | undefined> {
+    const messages = await this.findMessages(filter);
+
+    return this.getFirstOrNone(messages);
+  }
+
+  async findMessages(filter: ChatMessageFilter): Promise<ChatMessage[]> {
     return this.messages.filter(filter);
   }
 
@@ -38,5 +56,14 @@ export class ChatStorageMock implements ChatStorageProvider {
     this.messages.push(message);
 
     return message;
+  }
+
+  // MARK: - Private Methods
+  private getFirstOrNone<T>(items: T[]): T | undefined {
+    if (items.length === 0) {
+      return undefined;
+    }
+
+    return items[0];
   }
 }

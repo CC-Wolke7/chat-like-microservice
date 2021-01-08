@@ -3,11 +3,11 @@ import { ProviderToken } from '../provider';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { ChatStorage } from './chat.storage';
-import { ChatStorageMock } from './__mocks__/chat.storage';
 
+// DI for `ChatStorageProvider` (interface)
 const ChatStorageProvider: Provider = {
   provide: ProviderToken.CHAT_STORAGE,
-  useClass: process.env.NODE_ENV === 'test' ? ChatStorageMock : ChatStorage,
+  useClass: ChatStorage,
 };
 
 @Module({

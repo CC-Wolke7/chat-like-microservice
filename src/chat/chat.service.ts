@@ -1,5 +1,12 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { assert } from 'console';
+import { RecommenderBot } from '../auth/interfaces/service-account';
+import { AuthenticatedUser } from '../auth/interfaces/user';
 import { ProviderToken } from '../provider';
 import { equalSet } from '../util/helper';
 import {
@@ -27,8 +34,11 @@ export class ChatService {
     return this.storage.findChats((chat) => chat.participants.includes(user));
   }
 
-  async createChat(creator: UserUUID, participants: UserUUID[]): Promise<Chat> {
-    const allParticipants = new Set([creator, ...participants]);
+  async createChat(
+    creator: AuthenticatedUser | RecommenderBot,
+    participants: UserUUID[],
+  ): Promise<Chat> {
+    const allParticipants = new Set([creator.uuid, ...participants]);
 
     const existingChats = await this.storage.findChats((chat) => {
       return equalSet(new Set(chat.participants), allParticipants);
@@ -40,11 +50,12 @@ export class ChatService {
       throw new ConflictException();
     }
 
-    // @TODO: notify via websocket
     return this.storage.createChat({
-      creator,
+      creator: creator.uuid,
       participants: Array.from(allParticipants),
     });
+
+    // @TODO: broadcast via websocket
   }
 
   async getMessages(chat: ChatUUID): Promise<ChatMessage[]> {
@@ -53,15 +64,22 @@ export class ChatService {
 
   async createMesage(
     chat: ChatUUID,
-    sender: UserUUID,
+    sender: AuthenticatedUser | RecommenderBot,
     message: string,
   ): Promise<ChatMessage> {
-    // @TODO: notify via websocket
     return this.storage.createMessage({
       chat,
-      sender,
+      sender: sender.uuid,
       date: new Date(),
       body: message,
     });
+
+    // @TODO: broadcast via websocket
+  }
+
+  checkParticipation(chat: Chat, user: UserUUID): void {
+    if (!chat.participants.includes(user)) {
+      throw new ForbiddenException();
+    }
   }
 }
