@@ -1,10 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { ChatStorageProvider, Chat, ChatMessage } from './interfaces/storage';
+import {
+  ChatStorageProvider,
+  Chat,
+  ChatMessage,
+  ChatFilter,
+  ChatMessageFilter,
+} from './interfaces/storage';
 
 @Injectable()
 export class ChatStorage implements ChatStorageProvider {
   // MARK: - Public Properties
-  async findChats(filter: (chat: Chat) => boolean): Promise<Chat[]> {
+  async findChat(filter: ChatFilter): Promise<Chat | undefined> {
+    throw new Error('not implemented');
+  }
+
+  async findChats(filter: ChatFilter): Promise<Chat[]> {
     throw new Error('not implemented');
   }
 
@@ -12,9 +22,13 @@ export class ChatStorage implements ChatStorageProvider {
     throw new Error('not implemented');
   }
 
-  async findMessages(
-    filter: (message: ChatMessage) => boolean,
-  ): Promise<ChatMessage[]> {
+  async findMessage(
+    filter: ChatMessageFilter,
+  ): Promise<ChatMessage | undefined> {
+    throw new Error('not implemented');
+  }
+
+  async findMessages(filter: ChatMessageFilter): Promise<ChatMessage[]> {
     throw new Error('not implemented');
   }
 

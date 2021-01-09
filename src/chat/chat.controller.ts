@@ -5,10 +5,15 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { CreateChatPayload, CreateMessagePayload } from './interfaces/dto';
+import {
+  CreateChatPayload,
+  CreateMessagePayload,
+  GetChatsQuery,
+} from './interfaces/dto';
 import { Chat, ChatMessage } from './interfaces/storage';
 import { ServiceTokenGuard } from '../auth/service-token/service-token.guard';
 import { User } from '../auth/user.decorator';
@@ -29,10 +34,15 @@ export class ChatController {
   }
 
   // MARK: - Routes
-  // @TODO: filter by ?participants=<uuid>,<uuid>
   @Get('chats')
-  async getChats(@User() user: AuthenticatedUser): Promise<Chat[]> {
-    return await this.chatService.getChats(user.uuid);
+  async getChats(
+    @Query() query: GetChatsQuery,
+    @User() user: AuthenticatedUser,
+  ): Promise<Chat[]> {
+    return await this.chatService.getChats(
+      user.uuid,
+      new Set(query.participants),
+    );
   }
 
   @Post('chats')
@@ -40,7 +50,7 @@ export class ChatController {
     @Body() payload: CreateChatPayload,
     @User() user: AuthenticatedUser | RecommenderBot,
   ): Promise<Chat> {
-    return this.chatService.createChat(user, payload.participants);
+    return this.chatService.createChat(user, new Set(payload.participants));
   }
 
   @Get('chat/:chatId/messages')

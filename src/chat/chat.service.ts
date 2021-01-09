@@ -30,15 +30,26 @@ export class ChatService {
   }
 
   // MARK: - Public Methods
-  async getChats(user: UserUUID): Promise<Chat[]> {
-    return this.storage.findChats((chat) => chat.participants.includes(user));
+  async getChats(
+    user: UserUUID,
+    participants?: Set<UserUUID>,
+  ): Promise<Chat[]> {
+    return this.storage.findChats(
+      (chat) =>
+        chat.participants.includes(user) &&
+        (participants !== undefined
+          ? Array.from(participants).every((participant) =>
+              chat.participants.includes(participant),
+            )
+          : true),
+    );
   }
 
   async createChat(
     creator: AuthenticatedUser | RecommenderBot,
-    participants: UserUUID[],
+    participants: Set<UserUUID>,
   ): Promise<Chat> {
-    const allParticipants = new Set([creator.uuid, ...participants]);
+    const allParticipants = participants.add(creator.uuid);
 
     const existingChats = await this.storage.findChats((chat) => {
       return equalSet(new Set(chat.participants), allParticipants);

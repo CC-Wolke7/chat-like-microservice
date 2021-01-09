@@ -17,6 +17,7 @@ import {
   ServiceAccountUser,
 } from '../src/auth/interfaces/service-account';
 import { UserType } from '../src/auth/interfaces/user';
+import * as qs from 'qs';
 
 describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -104,12 +105,12 @@ describe('ChatController (e2e) [authenticated]', () => {
       ],
     };
 
-    const createChatResponse = await request(app.getHttpServer())
-      .post('/chats')
-      .send(payload)
-      .expect(201);
-
-    const chat = createChatResponse.body as Chat;
+    const chat = (
+      await request(app.getHttpServer())
+        .post('/chats')
+        .send(payload)
+        .expect(201)
+    ).body as Chat;
 
     const keys = Object.keys(chat);
     const expectedKeys = ['uuid', 'creator', 'participants'];
@@ -119,11 +120,17 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     expect(isValidUUID(chat.uuid, 4)).toBeTruthy();
     expect(chat.creator).toEqual(user.uuid);
-    expect(chat.participants).toEqual([
-      user.uuid,
-      'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
-      '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
-    ]); // creator listed first
+    expect(chat.participants.length).toEqual(3);
+    expect(
+      equalSet(
+        new Set(chat.participants),
+        new Set([
+          user.uuid,
+          'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
+          '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
+        ]),
+      ),
+    );
 
     // Returns newly created chat in list of chats
     return request(app.getHttpServer())
@@ -141,18 +148,24 @@ describe('ChatController (e2e) [authenticated]', () => {
       ],
     };
 
-    const createChatResponse = await request(app.getHttpServer())
-      .post('/chats')
-      .send(payload)
-      .expect(201);
+    const chat = (
+      await request(app.getHttpServer())
+        .post('/chats')
+        .send(payload)
+        .expect(201)
+    ).body as Chat;
 
-    const chat = createChatResponse.body as Chat;
-
-    return expect(chat.participants).toEqual([
-      user.uuid,
-      'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
-      '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
-    ]); // creator listed first
+    expect(chat.participants.length).toEqual(3);
+    expect(
+      equalSet(
+        new Set(chat.participants),
+        new Set([
+          user.uuid,
+          'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
+          '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
+        ]),
+      ),
+    );
   });
 
   it('/chats (POST) - fails if chat with same `participants` already exists', async () => {
@@ -169,6 +182,78 @@ describe('ChatController (e2e) [authenticated]', () => {
       .post('/chats')
       .send(payload)
       .expect(409);
+  });
+
+  it('/chats (GET) - can filter chats by `participants` query param', async () => {
+    const createFirstChatPayload: CreateChatPayload = {
+      participants: [
+        'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
+        '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
+      ],
+    };
+
+    await request(app.getHttpServer())
+      .post('/chats')
+      .send(createFirstChatPayload)
+      .expect(201);
+
+    const createSecondChatPayload: CreateChatPayload = {
+      participants: [
+        'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
+        '615a247b-e65a-4439-a43a-7fc3bebd869c',
+        'b56ad0f5-9b48-4c5d-9cb2-edde65fc5d4d',
+      ],
+    };
+
+    await request(app.getHttpServer())
+      .post('/chats')
+      .send(createSecondChatPayload)
+      .expect(201);
+
+    // Returns all chats if no query is specified
+    const chats = (await request(app.getHttpServer()).get('/chats').expect(200))
+      .body as Chat[];
+
+    expect(chats.length).toEqual(2);
+
+    // Query for chats in which user `f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba` participates
+    // returns two results
+    const firstQueryResult = (
+      await request(app.getHttpServer())
+        .get('/chats')
+        .query(
+          qs.stringify(
+            {
+              participants: ['f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba'],
+            },
+            { arrayFormat: 'indices' },
+          ),
+        )
+        .expect(200)
+    ).body as Chat[];
+
+    expect(firstQueryResult.length).toEqual(2);
+
+    // Query for chats in which user `f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba`
+    // and `615a247b-e65a-4439-a43a-7fc3bebd869c` participate returns one result
+    const secondQueryResult = (
+      await request(app.getHttpServer())
+        .get('/chats')
+        .query(
+          qs.stringify(
+            {
+              participants: [
+                'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
+                '615a247b-e65a-4439-a43a-7fc3bebd869c',
+              ],
+            },
+            { arrayFormat: 'indices' },
+          ),
+        )
+        .expect(200)
+    ).body as Chat[];
+
+    expect(secondQueryResult.length).toEqual(1);
   });
 
   it('/chat/:chatId/messages (GET) - fails if `chatId` is not a UUID', () => {
@@ -246,24 +331,24 @@ describe('ChatController (e2e) [authenticated]', () => {
       ],
     };
 
-    const createChatResponse = await request(app.getHttpServer())
-      .post('/chats')
-      .send(createChatPayload)
-      .expect(201);
-
-    const chat = createChatResponse.body as Chat;
+    const chat = (
+      await request(app.getHttpServer())
+        .post('/chats')
+        .send(createChatPayload)
+        .expect(201)
+    ).body as Chat;
 
     // Succeeds if chat with `chatId` exists
     const createMessagePayload: CreateMessagePayload = {
       message: 'hello',
     };
 
-    const createMessageResponse = await request(app.getHttpServer())
-      .post(`/chat/${chat.uuid}/messages`)
-      .send(createMessagePayload)
-      .expect(201);
-
-    const message = createMessageResponse.body as ChatMessage;
+    const message = (
+      await request(app.getHttpServer())
+        .post(`/chat/${chat.uuid}/messages`)
+        .send(createMessagePayload)
+        .expect(201)
+    ).body as ChatMessage;
 
     expect(isValidUUID(message.uuid, 4)).toBeTruthy();
     expect(message.chat).toEqual(chat.uuid);
