@@ -29,6 +29,7 @@ export class ChatController {
   }
 
   // MARK: - Routes
+  // @TODO: filter by ?participants=<uuid>,<uuid>
   @Get('chats')
   async getChats(@User() user: AuthenticatedUser): Promise<Chat[]> {
     return await this.chatService.getChats(user.uuid);
