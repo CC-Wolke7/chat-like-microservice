@@ -6,7 +6,7 @@ import {
   CreateChatPayload,
   CreateMessagePayload,
 } from '../src/chat/interfaces/dto';
-import { Chat, ChatMessage } from '../src/chat/interfaces/storage';
+import { Chat, ChatMessage } from './interfaces/chat';
 import { equalSet, isValidUUID } from '../src/util/helper';
 import { ProviderToken } from '../src/provider';
 import { ChatStorageMock } from '../src/chat/__mocks__/chat.storage';
@@ -18,6 +18,7 @@ import {
 } from '../src/auth/interfaces/service-account';
 import { UserType } from '../src/auth/interfaces/user';
 import * as qs from 'qs';
+import { isValidISODateString } from 'iso-datestring-validator';
 
 describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -353,8 +354,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     expect(isValidUUID(message.uuid, 4)).toBeTruthy();
     expect(message.chat).toEqual(chat.uuid);
     expect(message.sender).toEqual(user.uuid);
-    // @TODO: validate date string format
-    // expect(message.date).toBe(expect.any(Date));
+    expect(isValidISODateString(message.date)).toBeTruthy();
     expect(message.body).toEqual(createMessagePayload.message);
 
     // Returns newly created message in list of messages for chat
