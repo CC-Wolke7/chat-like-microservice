@@ -16,6 +16,7 @@ export class ChatStorageMock implements ChatStorageProvider {
   private messages: ChatMessage[] = []; // = CHAT_MESSAGES;
 
   // MARK: - Public Methods
+  // MARK: Chat Storage Provider
   async findChat(filter: ChatFilter): Promise<Chat | undefined> {
     const chats = await this.findChats(filter);
 

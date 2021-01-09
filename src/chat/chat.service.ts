@@ -9,6 +9,7 @@ import { RecommenderBot } from '../auth/interfaces/service-account';
 import { AuthenticatedUser } from '../auth/interfaces/user';
 import { ProviderToken } from '../provider';
 import { equalSet } from '../util/helper';
+import { ChatNotificationProvider } from './interfaces/notification';
 import {
   ChatStorageProvider,
   UserUUID,
@@ -21,12 +22,15 @@ import {
 export class ChatService {
   // MARK: - Private Properties
   private readonly storage: ChatStorageProvider;
+  private readonly notifier: ChatNotificationProvider;
 
   // MARK: - Initialization
   constructor(
     @Inject(ProviderToken.CHAT_STORAGE) storage: ChatStorageProvider,
+    @Inject(ProviderToken.CHAT_NOTIFIER) notifier: ChatNotificationProvider,
   ) {
     this.storage = storage;
+    this.notifier = notifier;
   }
 
   // MARK: - Public Methods
@@ -61,12 +65,14 @@ export class ChatService {
       throw new ConflictException();
     }
 
-    return this.storage.createChat({
+    const chat = await this.storage.createChat({
       creator: creator.uuid,
       participants: Array.from(allParticipants),
     });
 
-    // @TODO: broadcast via websocket
+    await this.notifier.notifyChatCreated(chat);
+
+    return chat;
   }
 
   async getMessages(chat: ChatUUID): Promise<ChatMessage[]> {
@@ -74,18 +80,20 @@ export class ChatService {
   }
 
   async createMesage(
-    chat: ChatUUID,
+    chat: Chat,
     sender: AuthenticatedUser | RecommenderBot,
-    message: string,
+    body: string,
   ): Promise<ChatMessage> {
-    return this.storage.createMessage({
-      chat,
+    const message = await this.storage.createMessage({
+      chat: chat.uuid,
       sender: sender.uuid,
       date: new Date(),
-      body: message,
+      body,
     });
 
-    // @TODO: broadcast via websocket
+    await this.notifier.notifyMessageCreated(chat, message);
+
+    return message;
   }
 
   checkParticipation(chat: Chat, user: UserUUID): void {

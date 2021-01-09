@@ -6,10 +6,10 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
-import { AppController } from './app.controller';
+import { AppModule } from './app/app.module';
+import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { logger } from './middleware/logger.middleware';
-import { AuthModule } from './auth/auth.module';
 
 const ValidationPipeProvider: Provider = {
   provide: APP_PIPE,
@@ -21,11 +21,10 @@ const ValidationPipeProvider: Provider = {
 };
 
 @Module({
-  imports: [AuthModule, ChatModule],
-  controllers: [AppController],
+  imports: [AuthModule, AppModule, ChatModule],
   providers: [ValidationPipeProvider],
 })
-export class AppModule implements NestModule {
+export class RootModule implements NestModule {
   // MARK: - Initialization
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(logger).forRoutes('*');

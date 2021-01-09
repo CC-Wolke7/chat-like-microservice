@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
 import {
   CreateChatPayload,
   CreateMessagePayload,
@@ -11,7 +10,7 @@ import { equalSet, isValidUUID } from '../src/util/helper';
 import { ProviderToken } from '../src/provider';
 import { ChatStorageMock } from '../src/chat/__mocks__/chat.storage';
 import { ServiceTokenGuard } from '../src/auth/service-token/service-token.guard';
-import { ServiceTokenGuardMock } from '../src/auth/__mocks__/service-token.guard';
+import { AuthGuardMock } from '../src/auth/__mocks__/auth.guard';
 import {
   ServiceAccountName,
   ServiceAccountUser,
@@ -19,6 +18,7 @@ import {
 import { UserType } from '../src/auth/interfaces/user';
 import * as qs from 'qs';
 import { isValidISODateString } from 'iso-datestring-validator';
+import { RootModule } from '../src/root.module';
 
 describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -30,15 +30,15 @@ describe('ChatController (e2e) [authenticated]', () => {
     uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
   };
 
-  // MARK: - Setup
+  // MARK: - Hooks
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [RootModule],
     })
       .overrideProvider(ProviderToken.CHAT_STORAGE)
       .useClass(ChatStorageMock)
       .overrideGuard(ServiceTokenGuard)
-      .useValue(new ServiceTokenGuardMock(user))
+      .useValue(new AuthGuardMock(user))
       .compile();
 
     app = moduleFixture.createNestApplication();

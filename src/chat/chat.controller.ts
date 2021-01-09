@@ -71,11 +71,6 @@ export class ChatController {
   ): Promise<ChatMessage> {
     this.chatService.checkParticipation(chat, user.uuid);
 
-    return this.chatService.createMesage(chat.uuid, user, payload.message);
-  }
-
-  @Get('chat')
-  chat(): void {
-    // @TODO: upgrade to websocket
+    return this.chatService.createMesage(chat, user, payload.message);
   }
 }

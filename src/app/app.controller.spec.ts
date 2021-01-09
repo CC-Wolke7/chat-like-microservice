@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
+import { HealthStatus } from './interfaces/health';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -15,7 +16,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "OK"', () => {
-      expect(appController.health()).toBe('OK');
+      expect(appController.getHealth()).toBe(HealthStatus.Normal);
     });
   });
 });

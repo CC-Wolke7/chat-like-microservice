@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { UserEntity } from '../interfaces/user';
 
 @Injectable()
-export class ServiceTokenGuardMock implements CanActivate {
+export class AuthGuardMock implements CanActivate {
   // MARK: - Private Properties
   private readonly user: UserEntity;
 
