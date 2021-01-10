@@ -4,7 +4,7 @@ import { HealthStatus } from './interfaces/health';
 @Controller()
 export class AppController {
   // MARK: - Routes
-  @Get()
+  @Get('health')
   getHealth(): HealthStatus {
     return HealthStatus.Normal;
   }

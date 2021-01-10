@@ -73,7 +73,7 @@ describe('AppGateway (e2e)', () => {
   //   socket.connect();
   // });
 
-  it('should return "OK" on health message', (done) => {
+  it(`should emit \`${AppEvent.HealthStatus}\` event with payload \`${HealthStatus.Normal}\` on '${AppEvent.HealthRequest}' event`, (done) => {
     socket.onopen = () => {
       socket.onmessage = (event: WebSocket.MessageEvent) => {
         const appEvent = JSON.parse(
