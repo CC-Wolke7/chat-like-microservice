@@ -22,6 +22,7 @@ export class AuthGuardMock implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     if (!this.user) {
       if (context.getType() === 'ws') {
+        // @TODO: move to global exception handler
         throw new WsException(ChatGatewayException.Unauthorized);
       } else {
         throw new UnauthorizedException();

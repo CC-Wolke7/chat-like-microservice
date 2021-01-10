@@ -3,8 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   ServiceAccountUser,
   ServiceAccountName,
-} from '../auth/interfaces/service-account';
-import { AuthenticatedUser, UserType } from '../auth/interfaces/user';
+} from '../app/auth/interfaces/service-account';
+import { AuthenticatedUser, UserType } from '../app/auth/interfaces/user';
 import { ProviderToken } from '../provider';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';

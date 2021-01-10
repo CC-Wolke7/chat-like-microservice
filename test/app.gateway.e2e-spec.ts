@@ -35,7 +35,7 @@ describe('AppGateway (e2e)', () => {
     // app.useWebSocketAdapter(new IoAdapter(app));
 
     // await app.init();
-    server = await app.listen(3001); // app.getHttpServer().listen()
+    server = await app.listen(3000); // app.getHttpServer().listen()
 
     const { address, port } = server.address();
     const host = `[${address}]:${port}`;
@@ -53,7 +53,7 @@ describe('AppGateway (e2e)', () => {
   });
 
   // MARK: - Tests
-  it('should connect', (done) => {
+  it('should be able to connect', (done) => {
     socket.on('open', () => {
       done();
     });

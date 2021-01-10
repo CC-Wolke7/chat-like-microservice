@@ -1,66 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import { ProviderToken } from '../src/provider';
-import { ChatStorageMock } from '../src/chat/__mocks__/chat.storage';
-import { ServiceTokenGuard } from '../src/auth/service-token/service-token.guard';
-import { AuthGuardMock } from '../src/auth/__mocks__/auth.guard';
 import {
   ServiceAccountName,
   ServiceAccountUser,
-} from '../src/auth/interfaces/service-account';
-import { UserType } from '../src/auth/interfaces/user';
-import * as WebSocket from 'ws';
-import { WsAdapter } from '@nestjs/platform-ws';
-import { RootModule } from '../src/root.module';
-// import { ChatEvent } from '../src/chat/event';
-// import { HealthStatus } from '../src/app/interfaces/health';
-// import { WsResponse } from '@nestjs/websockets';
-
-describe('ChatGateway (e2e)', () => {
-  // MARK: - Properties
-  let app: INestApplication;
-  let server: any;
-  let socket: WebSocket;
-
-  // MARK: - Hooks
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule],
-    })
-      .overrideProvider(ProviderToken.CHAT_STORAGE)
-      .useClass(ChatStorageMock)
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    app.useWebSocketAdapter(new WsAdapter(app));
-
-    server = await app.listen(3000);
-
-    const { address, port } = server.address();
-    const host = `[${address}]:${port}`;
-
-    socket = new WebSocket(`ws://${host}`);
-  });
-
-  afterEach(async () => {
-    socket.close();
-    await app.close();
-  });
-
-  // MARK: - Tests
-  // @TODO: implement
-  it('should fail to connect if not authenticated', (done) => {
-    socket.on('open', () => {
-      done();
-    });
-  });
-});
+} from '../src/app/auth/interfaces/service-account';
+import { UserType } from '../src/app/auth/interfaces/user';
+import { ChatEvent } from '../src/chat/gateway/event';
+import { WsResponse } from '@nestjs/websockets';
+import { CreateChatPayload } from '../src/chat/interfaces/dto';
+import * as request from 'supertest';
+import { PublicChat, PublicChatMessage } from './interfaces/chat';
+import { CreateMessageEventPayload } from '../src/chat/gateway/interfaces/dto.gateway';
+import { isValidISODateString } from 'iso-datestring-validator';
+import { equalSet } from '../src/util/helper';
+import {
+  ChatWebsocketTestEnvironment,
+  setupChatWebsocketTest,
+  stopWebsocketTest,
+} from './util/helper';
 
 describe('ChatGateway (e2e) [authenticated]', () => {
   // MARK: - Properties
-  let app: INestApplication;
-  let server: any;
-  let socket: WebSocket;
+  let environment: ChatWebsocketTestEnvironment;
 
   const user: ServiceAccountUser = {
     type: UserType.ServiceAccount,
@@ -70,56 +29,90 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
   // MARK: - Hooks
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule],
-    })
-      .overrideProvider(ProviderToken.CHAT_STORAGE)
-      .useClass(ChatStorageMock)
-      .overrideGuard(ServiceTokenGuard)
-      .useValue(new AuthGuardMock(user))
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    app.useWebSocketAdapter(new WsAdapter(app));
-
-    server = await app.listen(3000);
-
-    const { address, port } = server.address();
-    const host = `[${address}]:${port}`;
-
-    socket = new WebSocket(`ws://${host}`);
+    environment = await setupChatWebsocketTest(user, 3001);
   });
 
   afterEach(async () => {
-    socket.close();
-    await app.close();
+    await stopWebsocketTest(environment.app, environment.socket);
   });
 
   // MARK: - Tests
-  it('should connect', (done) => {
-    socket.on('open', () => {
-      done();
-    });
-  });
+  // @TODO: fix to allow multiple websocket tests in a suite
+  // it('should connect', (done) => {
+  //   const { socket } = environment;
 
-  // it('should return "OK" on health message', (done) => {
-  //   socket.onopen = () => {
-  //     socket.onmessage = (event: WebSocket.MessageEvent) => {
-  //       const appEvent = JSON.parse(
-  //         event.data as any,
-  //       ) as WsResponse<HealthStatus>;
-
-  //       expect(appEvent.event).toEqual(ChatEvent.MessageCreated);
-  //       expect(appEvent.data).toEqual(HealthStatus.Normal);
-
-  //       done();
-  //     };
-
-  //     socket.send(
-  //       JSON.stringify({
-  //         event: ChatEvent.CreateMessageRequest,
-  //       }),
-  //     );
-  //   };
+  //   socket.on('open', () => {
+  //     done();
+  //   });
   // });
+
+  it('should create message and notify chat participants (including sender)', async () => {
+    const { server, socket } = environment;
+
+    const createChatPayload: CreateChatPayload = {
+      participants: [
+        'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
+        '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
+      ],
+    };
+
+    const chat = (
+      await request(server).post('/chats').send(createChatPayload).expect(201)
+    ).body as PublicChat;
+
+    // @TODO: fix to allow request before websocket
+    // await request(server)
+    //   .get(`/chat/${chat.uuid}/messages`)
+    //   .expect(200)
+    //   .expect([]);
+
+    const createMessageEventPayload: CreateMessageEventPayload = {
+      chat: chat.uuid,
+      message: 'hello',
+    };
+
+    const createMessageEvent: WsResponse<CreateMessageEventPayload> = {
+      event: ChatEvent.CreateMessage,
+      data: createMessageEventPayload,
+    };
+
+    // Notifies sender
+    let message: PublicChatMessage;
+
+    await new Promise<void>((resolve) => {
+      socket.onopen = () => {
+        socket.onmessage = (event) => {
+          const chatEvent = JSON.parse(
+            event.data as any,
+          ) as WsResponse<PublicChatMessage>;
+
+          const keys = Object.keys(chatEvent.data);
+          const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
+
+          expect(keys.length).toEqual(expectedKeys.length);
+          expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
+
+          expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
+          expect(chatEvent.data.chat).toEqual(chat.uuid);
+          expect(chatEvent.data.sender).toEqual(user.uuid);
+          expect(isValidISODateString(chatEvent.data.date)).toBeTruthy();
+          expect(chatEvent.data.body).toEqual(
+            createMessageEventPayload.message,
+          );
+
+          message = chatEvent.data;
+
+          resolve();
+        };
+
+        socket.send(JSON.stringify(createMessageEvent));
+      };
+    });
+
+    // Returns newly created message in list of messages for chat
+    return request(server)
+      .get(`/chat/${chat.uuid}/messages`)
+      .expect(200)
+      .expect([message!]);
+  });
 });

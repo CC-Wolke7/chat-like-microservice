@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   ParseUUIDPipe,
   Post,
@@ -15,22 +16,29 @@ import {
   GetChatsQuery,
 } from './interfaces/dto';
 import { Chat, ChatMessage } from './interfaces/storage';
-import { ServiceTokenGuard } from '../auth/service-token/service-token.guard';
-import { User } from '../auth/user.decorator';
-import { AuthenticatedUser } from '../auth/interfaces/user';
-import { RecommenderBot } from '../auth/interfaces/service-account';
+import { ServiceTokenGuard } from '../app/auth/strategy/service-token/service-token.guard';
+import { User } from '../app/auth/user.decorator';
+import { AuthenticatedUser } from '../app/auth/interfaces/user';
+import { RecommenderBot } from '../app/auth/interfaces/service-account';
 import { ChatByUUIDPipe } from './chat.pipe';
+import { ProviderToken } from '../provider';
+import { ChatNotificationProvider } from './interfaces/notification';
 
 // @TODO: add JWT & recommender bot guard
 @UseGuards(ServiceTokenGuard)
 @Controller()
 export class ChatController {
   // MARK: - Private Properties
-  private readonly chatService: ChatService;
+  private readonly service: ChatService;
+  private readonly notifier: ChatNotificationProvider;
 
   // MARK: - Initialization
-  constructor(chatService: ChatService) {
-    this.chatService = chatService;
+  constructor(
+    service: ChatService,
+    @Inject(ProviderToken.CHAT_NOTIFIER) notifier: ChatNotificationProvider,
+  ) {
+    this.service = service;
+    this.notifier = notifier;
   }
 
   // MARK: - Routes
@@ -39,10 +47,7 @@ export class ChatController {
     @Query() query: GetChatsQuery,
     @User() user: AuthenticatedUser,
   ): Promise<Chat[]> {
-    return await this.chatService.getChats(
-      user.uuid,
-      new Set(query.participants),
-    );
+    return await this.service.getChats(user.uuid, new Set(query.participants));
   }
 
   @Post('chats')
@@ -50,7 +55,14 @@ export class ChatController {
     @Body() payload: CreateChatPayload,
     @User() user: AuthenticatedUser | RecommenderBot,
   ): Promise<Chat> {
-    return this.chatService.createChat(user, new Set(payload.participants));
+    const chat = await this.service.createChat(
+      user,
+      new Set(payload.participants),
+    );
+
+    await this.notifier.notifyChatCreated(chat);
+
+    return chat;
   }
 
   @Get('chat/:chatId/messages')
@@ -58,9 +70,9 @@ export class ChatController {
     @Param('chatId', ParseUUIDPipe, ChatByUUIDPipe) chat: Chat,
     @User() user: AuthenticatedUser,
   ): Promise<ChatMessage[]> {
-    this.chatService.checkParticipation(chat, user.uuid);
+    this.service.checkParticipation(chat, user.uuid);
 
-    return this.chatService.getMessages(chat.uuid);
+    return this.service.getMessages(chat.uuid);
   }
 
   @Post('chat/:chatId/messages')
@@ -69,8 +81,16 @@ export class ChatController {
     @Body() payload: CreateMessagePayload,
     @User() user: AuthenticatedUser | RecommenderBot,
   ): Promise<ChatMessage> {
-    this.chatService.checkParticipation(chat, user.uuid);
+    this.service.checkParticipation(chat, user.uuid);
 
-    return this.chatService.createMesage(chat, user, payload.message);
+    const message = await this.service.createMessage(
+      chat.uuid,
+      user,
+      payload.message,
+    );
+
+    await this.notifier.notifyMessageCreated(chat, message);
+
+    return message;
   }
 }

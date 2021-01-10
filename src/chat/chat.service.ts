@@ -5,11 +5,10 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { assert } from 'console';
-import { RecommenderBot } from '../auth/interfaces/service-account';
-import { AuthenticatedUser } from '../auth/interfaces/user';
+import { RecommenderBot } from '../app/auth/interfaces/service-account';
+import { AuthenticatedUser } from '../app/auth/interfaces/user';
 import { ProviderToken } from '../provider';
 import { equalSet } from '../util/helper';
-import { ChatNotificationProvider } from './interfaces/notification';
 import {
   ChatStorageProvider,
   UserUUID,
@@ -22,18 +21,19 @@ import {
 export class ChatService {
   // MARK: - Private Properties
   private readonly storage: ChatStorageProvider;
-  private readonly notifier: ChatNotificationProvider;
 
   // MARK: - Initialization
   constructor(
     @Inject(ProviderToken.CHAT_STORAGE) storage: ChatStorageProvider,
-    @Inject(ProviderToken.CHAT_NOTIFIER) notifier: ChatNotificationProvider,
   ) {
     this.storage = storage;
-    this.notifier = notifier;
   }
 
   // MARK: - Public Methods
+  async getChat(uuid: ChatUUID): Promise<Chat | undefined> {
+    return this.storage.findChat((chat) => chat.uuid === uuid);
+  }
+
   async getChats(
     user: UserUUID,
     participants?: Set<UserUUID>,
@@ -70,8 +70,6 @@ export class ChatService {
       participants: Array.from(allParticipants),
     });
 
-    await this.notifier.notifyChatCreated(chat);
-
     return chat;
   }
 
@@ -79,25 +77,25 @@ export class ChatService {
     return this.storage.findMessages((message) => message.chat === chat);
   }
 
-  async createMesage(
-    chat: Chat,
+  async createMessage(
+    chat: ChatUUID,
     sender: AuthenticatedUser | RecommenderBot,
     body: string,
   ): Promise<ChatMessage> {
     const message = await this.storage.createMessage({
-      chat: chat.uuid,
+      chat,
       sender: sender.uuid,
       date: new Date(),
       body,
     });
-
-    await this.notifier.notifyMessageCreated(chat, message);
 
     return message;
   }
 
   checkParticipation(chat: Chat, user: UserUUID): void {
     if (!chat.participants.includes(user)) {
+      // @TODO: move to global exception handler
+      // throw new WsException(ChatGatewayException.Forbidden);
       throw new ForbiddenException();
     }
   }

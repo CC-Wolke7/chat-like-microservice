@@ -1,5 +1,5 @@
 export enum ChatEvent {
   ChatCreated = 'CHAT_CREATED',
-  CreateMessageRequest = 'CREATE_MESSAGE_REQUEST',
+  CreateMessage = 'CREATE_MESSAGE',
   MessageCreated = 'MESSAGE_CREATED',
 }

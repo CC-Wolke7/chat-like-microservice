@@ -5,17 +5,17 @@ import {
   CreateChatPayload,
   CreateMessagePayload,
 } from '../src/chat/interfaces/dto';
-import { Chat, ChatMessage } from './interfaces/chat';
+import { PublicChat, PublicChatMessage } from './interfaces/chat';
 import { equalSet, isValidUUID } from '../src/util/helper';
 import { ProviderToken } from '../src/provider';
 import { ChatStorageMock } from '../src/chat/__mocks__/chat.storage';
-import { ServiceTokenGuard } from '../src/auth/service-token/service-token.guard';
-import { AuthGuardMock } from '../src/auth/__mocks__/auth.guard';
+import { ServiceTokenGuard } from '../src/app/auth/strategy/service-token/service-token.guard';
+import { AuthGuardMock } from '../src/app/auth/__mocks__/auth.guard';
 import {
   ServiceAccountName,
   ServiceAccountUser,
-} from '../src/auth/interfaces/service-account';
-import { UserType } from '../src/auth/interfaces/user';
+} from '../src/app/auth/interfaces/service-account';
+import { UserType } from '../src/app/auth/interfaces/user';
 import * as qs from 'qs';
 import { isValidISODateString } from 'iso-datestring-validator';
 import { RootModule } from '../src/root.module';
@@ -111,7 +111,7 @@ describe('ChatController (e2e) [authenticated]', () => {
         .post('/chats')
         .send(payload)
         .expect(201)
-    ).body as Chat;
+    ).body as PublicChat;
 
     const keys = Object.keys(chat);
     const expectedKeys = ['uuid', 'creator', 'participants'];
@@ -154,7 +154,7 @@ describe('ChatController (e2e) [authenticated]', () => {
         .post('/chats')
         .send(payload)
         .expect(201)
-    ).body as Chat;
+    ).body as PublicChat;
 
     expect(chat.participants.length).toEqual(3);
     expect(
@@ -213,7 +213,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     // Returns all chats if no query is specified
     const chats = (await request(app.getHttpServer()).get('/chats').expect(200))
-      .body as Chat[];
+      .body as PublicChat[];
 
     expect(chats.length).toEqual(2);
 
@@ -231,7 +231,7 @@ describe('ChatController (e2e) [authenticated]', () => {
           ),
         )
         .expect(200)
-    ).body as Chat[];
+    ).body as PublicChat[];
 
     expect(firstQueryResult.length).toEqual(2);
 
@@ -252,7 +252,7 @@ describe('ChatController (e2e) [authenticated]', () => {
           ),
         )
         .expect(200)
-    ).body as Chat[];
+    ).body as PublicChat[];
 
     expect(secondQueryResult.length).toEqual(1);
   });
@@ -282,7 +282,7 @@ describe('ChatController (e2e) [authenticated]', () => {
       .send(payload)
       .expect(201);
 
-    const chat = createChatResponse.body as Chat;
+    const chat = createChatResponse.body as PublicChat;
 
     return request(app.getHttpServer())
       .get(`/chat/${chat.uuid}/messages`)
@@ -337,7 +337,7 @@ describe('ChatController (e2e) [authenticated]', () => {
         .post('/chats')
         .send(createChatPayload)
         .expect(201)
-    ).body as Chat;
+    ).body as PublicChat;
 
     // Succeeds if chat with `chatId` exists
     const createMessagePayload: CreateMessagePayload = {
@@ -349,7 +349,13 @@ describe('ChatController (e2e) [authenticated]', () => {
         .post(`/chat/${chat.uuid}/messages`)
         .send(createMessagePayload)
         .expect(201)
-    ).body as ChatMessage;
+    ).body as PublicChatMessage;
+
+    const keys = Object.keys(message);
+    const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
+
+    expect(keys.length).toEqual(expectedKeys.length);
+    expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
 
     expect(isValidUUID(message.uuid, 4)).toBeTruthy();
     expect(message.chat).toEqual(chat.uuid);

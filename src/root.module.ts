@@ -8,7 +8,7 @@ import {
 import { APP_PIPE } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ChatModule } from './chat/chat.module';
-import { logger } from './app/middleware/logger.middleware';
+import { LoggerMiddleware } from './app/middleware/logger.middleware';
 
 const ValidationPipeProvider: Provider = {
   provide: APP_PIPE,
@@ -26,6 +26,6 @@ const ValidationPipeProvider: Provider = {
 export class RootModule implements NestModule {
   // MARK: - Initialization
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(logger).forRoutes('*');
+    consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

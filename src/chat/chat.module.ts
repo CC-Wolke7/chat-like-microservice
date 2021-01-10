@@ -1,7 +1,7 @@
 import { Module, Provider } from '@nestjs/common';
 import { ProviderToken } from '../provider';
 import { ChatController } from './chat.controller';
-import { ChatGateway } from './chat.gateway';
+import { ChatGateway } from './gateway/chat.gateway';
 import { ChatService } from './chat.service';
 import { ChatStorage } from './chat.storage';
 
@@ -19,7 +19,7 @@ const ChatNotificationProvider: Provider = {
   controllers: [ChatController],
   providers: [
     ChatService,
-    ChatGateway,
+    // ChatGateway, // uncomment if different CHAT_NOTIFIER is used, otherwise this will be instantiated twice
     ChatStorageProvider,
     ChatNotificationProvider,
   ],
