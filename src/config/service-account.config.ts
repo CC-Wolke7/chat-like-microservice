@@ -6,11 +6,11 @@ import { Environment } from './environment';
 import { registerAs } from '@nestjs/config';
 import { ConfigNamespace } from './namespace';
 
+type Token = string;
+
 export interface ServiceAccountConfig {
   tokenWhitelist: string[];
-  accountForToken: {
-    [token: string]: Omit<ServiceAccount, 'type'>;
-  };
+  accountForToken: Record<Token, Omit<ServiceAccount, 'type'>>;
 }
 
 export default registerAs(
