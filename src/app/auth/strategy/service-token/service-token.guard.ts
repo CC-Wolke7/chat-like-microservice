@@ -3,8 +3,8 @@ import { AuthGuard } from '@nestjs/passport';
 import {
   ServiceAccount,
   ServiceAccountName,
-} from '../interfaces/service-account';
-import { AuthStrategyName } from '../strategy';
+} from '../../interfaces/service-account';
+import { AuthStrategyName } from '../../strategy';
 
 @Injectable()
 export class ServiceTokenGuard extends AuthGuard(

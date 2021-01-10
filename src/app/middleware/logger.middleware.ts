@@ -9,7 +9,11 @@ import { NextFunction, Request, Response } from 'express';
 //   }
 // }
 
-export function logger(req: Request, res: Response, next: NextFunction): void {
-  console.log(`${req.method} ${req.path}`);
+export function logger(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): void {
+  console.log(`${request.method} ${request.path}`, request.query);
   next();
 }

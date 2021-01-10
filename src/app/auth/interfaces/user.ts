@@ -1,4 +1,4 @@
-import { UserUUID } from '../../chat/interfaces/storage';
+import { UserUUID } from '../../../chat/interfaces/storage';
 import { ServiceAccount } from './service-account';
 
 export enum UserType {

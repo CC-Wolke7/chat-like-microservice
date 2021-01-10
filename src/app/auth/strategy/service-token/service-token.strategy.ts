@@ -5,12 +5,12 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthStrategyName } from '../strategy';
-import { UserType } from '../interfaces/user';
-import { ServiceAccount } from '../interfaces/service-account';
+import { AuthStrategyName } from '../../strategy';
+import { UserType } from '../../interfaces/user';
+import { ServiceAccount } from '../../interfaces/service-account';
 import serviceAccountConfig, {
   ServiceAccountConfig,
-} from '../../config/service-account.config';
+} from '../../../config/service-account.config';
 
 export class ServiceTokenStrategy extends PassportStrategy(
   Strategy,
