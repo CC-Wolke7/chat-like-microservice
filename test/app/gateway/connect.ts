@@ -1,13 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { ProviderToken } from '../../src/provider';
-import { ChatStorageMock } from '../../src/chat/__mocks__/chat.storage';
 import * as WebSocket from 'ws';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { AppEvent } from '../../src/app/event';
-import { RootModule } from '../../src/root.module';
-import { WsResponse } from '@nestjs/websockets';
-import { HealthStatus } from '../../src/app/interfaces/health';
+import { ChatStorageMock } from '../../../src/chat/__mocks__/chat.storage';
+import { ProviderToken } from '../../../src/provider';
+import { RootModule } from '../../../src/root.module';
 // import { io, Socket } from 'socket.io-client';
 // import { IoAdapter } from '@nestjs/platform-socket.io';
 
@@ -72,25 +69,4 @@ describe('AppGateway (e2e)', () => {
 
   //   socket.connect();
   // });
-
-  it(`should emit \`${AppEvent.HealthStatus}\` event with payload \`${HealthStatus.Normal}\` on '${AppEvent.HealthRequest}' event`, (done) => {
-    socket.onopen = () => {
-      socket.onmessage = (event: WebSocket.MessageEvent) => {
-        const appEvent = JSON.parse(
-          event.data as any,
-        ) as WsResponse<HealthStatus>;
-
-        expect(appEvent.event).toEqual(AppEvent.HealthStatus);
-        expect(appEvent.data).toEqual(HealthStatus.Normal);
-
-        done();
-      };
-
-      socket.send(
-        JSON.stringify({
-          event: AppEvent.HealthRequest,
-        }),
-      );
-    };
-  });
 });
