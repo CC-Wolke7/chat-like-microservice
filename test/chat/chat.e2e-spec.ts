@@ -4,21 +4,21 @@ import * as request from 'supertest';
 import {
   CreateChatPayload,
   CreateMessagePayload,
-} from '../src/chat/interfaces/dto';
+} from '../../src/chat/interfaces/dto';
 import { PublicChat, PublicChatMessage } from './interfaces/chat';
-import { equalSet, isValidUUID } from '../src/util/helper';
-import { ProviderToken } from '../src/provider';
-import { ChatStorageMock } from '../src/chat/__mocks__/chat.storage';
-import { ServiceTokenGuard } from '../src/app/auth/strategy/service-token/service-token.guard';
-import { AuthGuardMock } from '../src/app/auth/__mocks__/auth.guard';
+import { equalSet, isValidUUID } from '../../src/util/helper';
+import { ProviderToken } from '../../src/provider';
+import { ChatStorageMock } from '../../src/chat/__mocks__/chat.storage';
+import { ServiceTokenGuard } from '../../src/app/auth/strategy/service-token/service-token.guard';
+import { AuthGuardMock } from '../../src/app/auth/__mocks__/auth.guard';
 import {
   ServiceAccountName,
   ServiceAccountUser,
-} from '../src/app/auth/interfaces/service-account';
-import { UserType } from '../src/app/auth/interfaces/user';
+} from '../../src/app/auth/interfaces/service-account';
+import { UserType } from '../../src/app/auth/interfaces/user';
 import * as qs from 'qs';
 import { isValidISODateString } from 'iso-datestring-validator';
-import { RootModule } from '../src/root.module';
+import { RootModule } from '../../src/root.module';
 
 describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties

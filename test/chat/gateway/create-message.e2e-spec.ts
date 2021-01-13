@@ -1,21 +1,22 @@
 import {
   ServiceAccountName,
   ServiceAccountUser,
-} from '../src/app/auth/interfaces/service-account';
-import { UserType } from '../src/app/auth/interfaces/user';
-import { ChatEvent } from '../src/chat/gateway/event';
+} from '../../../src/app/auth/interfaces/service-account';
+import { UserType } from '../../../src/app/auth/interfaces/user';
+import { ChatEvent } from '../../../src/chat/gateway/event';
 import { WsResponse } from '@nestjs/websockets';
-import { CreateChatPayload } from '../src/chat/interfaces/dto';
+import { CreateChatPayload } from '../../../src/chat/interfaces/dto';
 import * as request from 'supertest';
-import { PublicChat, PublicChatMessage } from './interfaces/chat';
-import { CreateMessageEventPayload } from '../src/chat/gateway/interfaces/dto.gateway';
+import { PublicChat, PublicChatMessage } from '../interfaces/chat';
+import { CreateMessageEventPayload } from '../../../src/chat/gateway/interfaces/dto.gateway';
 import { isValidISODateString } from 'iso-datestring-validator';
-import { equalSet } from '../src/util/helper';
+import { equalSet } from '../../../src/util/helper';
 import {
   ChatWebsocketTestEnvironment,
+  getTestSocket,
   setupChatWebsocketTest,
   stopWebsocketTest,
-} from './util/helper';
+} from '../../util/helper';
 
 describe('ChatGateway (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -37,15 +38,6 @@ describe('ChatGateway (e2e) [authenticated]', () => {
   });
 
   // MARK: - Tests
-  // @TODO: fix to allow multiple websocket tests in a suite
-  // it('should connect', (done) => {
-  //   const { socket } = environment;
-
-  //   socket.on('open', () => {
-  //     done();
-  //   });
-  // });
-
   it('should create message and notify chat participants (including sender)', async () => {
     const { server, socket } = environment;
 
@@ -79,12 +71,16 @@ describe('ChatGateway (e2e) [authenticated]', () => {
     // Notifies sender
     let message: PublicChatMessage;
 
-    await new Promise<void>((resolve) => {
+    const senderNotification = new Promise<void>((resolve) => {
       socket.onopen = () => {
+        console.log('Sender connected');
+
         socket.onmessage = (event) => {
           const chatEvent = JSON.parse(
             event.data as any,
           ) as WsResponse<PublicChatMessage>;
+
+          console.log('Sender notification');
 
           const keys = Object.keys(chatEvent.data);
           const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
@@ -108,6 +104,29 @@ describe('ChatGateway (e2e) [authenticated]', () => {
         socket.send(JSON.stringify(createMessageEvent));
       };
     });
+
+    // Notifies other participant
+    // const participantSocket = getTestSocket(server);
+
+    // const participantNotification = new Promise<void>((resolve) => {
+    //   participantSocket.onopen = () => {
+    //     console.log('Participant connected');
+
+    //     socket.onmessage = (event) => {
+    //       const chatEvent = JSON.parse(
+    //         event.data as any,
+    //       ) as WsResponse<PublicChatMessage>;
+
+    //       console.log('Participant notification');
+
+    //       expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
+
+    //       resolve();
+    //     };
+    //   };
+    // });
+
+    await Promise.all([senderNotification]);
 
     // Returns newly created message in list of messages for chat
     return request(server)

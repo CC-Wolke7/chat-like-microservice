@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { RootModule } from '../src/root.module';
+import { RootModule } from '../../src/root.module';
 
 describe('AppController (e2e)', () => {
   // MARK: - Properties
