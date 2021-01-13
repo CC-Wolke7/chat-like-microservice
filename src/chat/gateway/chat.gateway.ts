@@ -3,9 +3,9 @@ import {
   WebSocketGateway,
   MessageBody,
   WsResponse,
-  OnGatewayConnection,
   OnGatewayDisconnect,
   WsException,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { ChatNotificationProvider } from '../interfaces/notification';
 import { Chat, ChatMessage, ChatUUID, UserUUID } from '../interfaces/storage';
@@ -20,48 +20,76 @@ import { UserType } from '../../app/auth/interfaces/user';
 import { CreateMessageEventPayload } from './interfaces/dto.gateway';
 import { ChatService } from '../chat.service';
 import { ChatGatewayException } from './exception';
+import { HttpAdapterHost } from '@nestjs/core';
+import * as http from 'http';
+import { AuthenticatedWsGateway } from '../../util/AuthenticatedWsGateway';
 
 // @TODO: abstract chat rooms - https://github.com/afertil/nest-chat-api
+// @TODO: detect broken/closed connections via ping/pong - https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
+
+// @TODO: configure path and remove socket.io reference
+// console.log(server);
+
+type AuthenticatedWebSocket = WebSocket & {
+  user: ServiceAccountUser;
+};
+
 @WebSocketGateway()
 export class ChatGateway
-  implements
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-    ChatNotificationProvider {
+  extends AuthenticatedWsGateway<ServiceAccountUser>
+  implements OnGatewayDisconnect<WebSocket>, ChatNotificationProvider {
   // MARK: - Private Properties
   private readonly service: ChatService;
 
-  private readonly socketForUser = new Map<UserUUID, WebSocket | undefined>();
-
-  private user: ServiceAccountUser = {
-    type: UserType.ServiceAccount,
-    name: ServiceAccountName.UnitTest,
-    uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
-  };
+  private readonly socketForUser = new Map<
+    UserUUID,
+    AuthenticatedWebSocket | undefined
+  >();
 
   // MARK: - Initialization
-  constructor(service: ChatService) {
+  constructor(adapterHost: HttpAdapterHost, service: ChatService) {
+    super(adapterHost);
+
     this.service = service;
   }
 
   // MARK: - Public Methods
-  // MARK: Lifecycle
-  handleConnection(socket: WebSocket): void {
-    const user = this.user.uuid;
-    this.socketForUser.set(user, socket);
+  // MARK: AuthenticatedWsGateway
+  async verifyUser(
+    request: http.IncomingMessage,
+  ): Promise<ServiceAccountUser | undefined> {
+    // @TODO: https://github.com/nestjs/nest/issues/882#issuecomment-653237579
+    // @TODO: retrieve user by headers
+    const user: ServiceAccountUser = {
+      type: UserType.ServiceAccount,
+      name: ServiceAccountName.UnitTest,
+      uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
+    };
+
+    return user;
   }
 
-  handleDisconnect(socket: WebSocket): void {
-    const user = this.user.uuid;
-    this.socketForUser.delete(user);
+  // MARK: Lifecycle
+  handleConnection(
+    socket: AuthenticatedWebSocket,
+    request: http.IncomingMessage,
+    user: User,
+  ): void {
+    socket.user = user;
+    this.socketForUser.set(user.uuid, socket);
+  }
+
+  handleDisconnect(socket: AuthenticatedWebSocket): void {
+    this.socketForUser.delete(socket.user.uuid);
   }
 
   // MARK: Event Handler
   @SubscribeMessage(ChatEvent.CreateMessage)
   async createMessage(
+    @ConnectedSocket() socket: AuthenticatedWebSocket,
     @MessageBody() payload: CreateMessageEventPayload,
   ): Promise<void> {
-    const user = this.user;
+    const user = socket.user;
 
     const chat = await this.getChat(payload.chat);
     this.service.checkParticipation(chat, user.uuid);
