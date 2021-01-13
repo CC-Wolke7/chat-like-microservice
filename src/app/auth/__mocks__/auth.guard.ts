@@ -32,8 +32,6 @@ export class AuthGuardMock implements CanActivate {
     const request = context.switchToHttp().getRequest();
     request.user = this.user;
 
-    // @TODO: set user for WS https://github.com/nestjs/nest/issues/1254#issuecomment-453280476
-
     return true;
   }
 }

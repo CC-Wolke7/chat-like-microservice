@@ -1,8 +1,3 @@
-import {
-  ServiceAccountName,
-  ServiceAccountUser,
-} from '../../../src/app/auth/interfaces/service-account';
-import { UserType } from '../../../src/app/auth/interfaces/user';
 import { ChatEvent } from '../../../src/chat/gateway/event';
 import { WsResponse } from '@nestjs/websockets';
 import { CreateChatPayload } from '../../../src/chat/interfaces/dto';
@@ -12,51 +7,56 @@ import { CreateMessageEventPayload } from '../../../src/chat/gateway/interfaces/
 import { isValidISODateString } from 'iso-datestring-validator';
 import { equalSet } from '../../../src/util/helper';
 import {
-  ChatWebsocketTestEnvironment,
-  getTestSocket,
+  connectToWebsocket,
+  CREATOR_SERVICE_TOKEN,
+  NON_PARTICIPANT_SERVICE_TOKEN,
+  PARTICIPANT_SERVICE_TOKEN,
   setupChatWebsocketTest,
   stopWebsocketTest,
+  TEST_SERVICE_ACCOUNT_CONFIG,
+  WebsocketTestEnvironment,
 } from '../../util/helper';
+import * as WebSocket from 'ws';
 
 describe('ChatGateway (e2e) [authenticated]', () => {
   // MARK: - Properties
-  let environment: ChatWebsocketTestEnvironment;
+  let environment: WebsocketTestEnvironment;
+  let sockets: WebSocket[];
 
-  const user: ServiceAccountUser = {
-    type: UserType.ServiceAccount,
-    name: ServiceAccountName.UnitTest,
-    uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
-  };
+  const chatCreator =
+    TEST_SERVICE_ACCOUNT_CONFIG.accountForToken[CREATOR_SERVICE_TOKEN];
 
   // MARK: - Hooks
   beforeEach(async () => {
-    environment = await setupChatWebsocketTest(user, 4001);
+    environment = await setupChatWebsocketTest(4001);
+    sockets = [];
   });
 
   afterEach(async () => {
-    await stopWebsocketTest(environment.app, environment.socket);
+    await stopWebsocketTest(environment.app, ...sockets);
   });
 
   // MARK: - Tests
-  it('should create message and notify chat participants (including sender)', async () => {
-    const { server, socket } = environment;
+  it('should create message and only notify chat participants (including creator)', async () => {
+    const { server } = environment;
 
     const createChatPayload: CreateChatPayload = {
-      participants: [
-        'f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba',
-        '5235ab4e-4fd7-449b-aea2-55b5fc792e5b',
-      ],
+      participants: ['f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba'],
     };
 
     const chat = (
-      await request(server).post('/chats').send(createChatPayload).expect(201)
+      await request(server)
+        .post('/chats')
+        .set('Authorization', `Bearer ${CREATOR_SERVICE_TOKEN}`)
+        .send(createChatPayload)
+        .expect(201)
     ).body as PublicChat;
 
-    // @TODO: fix to allow request before websocket
-    // await request(server)
-    //   .get(`/chat/${chat.uuid}/messages`)
-    //   .expect(200)
-    //   .expect([]);
+    await request(server)
+      .get(`/chat/${chat.uuid}/messages`)
+      .set('Authorization', `Bearer ${CREATOR_SERVICE_TOKEN}`)
+      .expect(200)
+      .expect([]);
 
     const createMessageEventPayload: CreateMessageEventPayload = {
       chat: chat.uuid,
@@ -68,19 +68,23 @@ describe('ChatGateway (e2e) [authenticated]', () => {
       data: createMessageEventPayload,
     };
 
-    // Notifies sender
     let message: PublicChatMessage;
 
-    const senderNotification = new Promise<void>((resolve) => {
-      socket.onopen = () => {
-        // console.log('Sender connected');
+    // Notifies creator
+    const creatorSocket = connectToWebsocket(server, {
+      headers: {
+        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
+      },
+    });
 
-        socket.onmessage = (event) => {
+    sockets.push(creatorSocket);
+
+    const creatorNotification = new Promise<void>((resolve) => {
+      creatorSocket.onopen = () => {
+        creatorSocket.onmessage = (event) => {
           const chatEvent = JSON.parse(
             event.data as any,
           ) as WsResponse<PublicChatMessage>;
-
-          // console.log('Sender notification');
 
           const keys = Object.keys(chatEvent.data);
           const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
@@ -90,7 +94,7 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
           expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
           expect(chatEvent.data.chat).toEqual(chat.uuid);
-          expect(chatEvent.data.sender).toEqual(user.uuid);
+          expect(chatEvent.data.sender).toEqual(chatCreator.uuid);
           expect(isValidISODateString(chatEvent.data.date)).toBeTruthy();
           expect(chatEvent.data.body).toEqual(
             createMessageEventPayload.message,
@@ -101,36 +105,61 @@ describe('ChatGateway (e2e) [authenticated]', () => {
           resolve();
         };
 
-        socket.send(JSON.stringify(createMessageEvent));
+        creatorSocket.send(JSON.stringify(createMessageEvent));
       };
     });
 
     // Notifies other participant
-    // const participantSocket = getTestSocket(server);
+    const participantSocket = connectToWebsocket(server, {
+      headers: {
+        Authorization: `Bearer ${PARTICIPANT_SERVICE_TOKEN}`,
+      },
+    });
 
-    // const participantNotification = new Promise<void>((resolve) => {
-    //   participantSocket.onopen = () => {
-    //     console.log('Participant connected');
+    sockets.push(participantSocket);
 
-    //     socket.onmessage = (event) => {
-    //       const chatEvent = JSON.parse(
-    //         event.data as any,
-    //       ) as WsResponse<PublicChatMessage>;
+    const participantNotification = new Promise<void>((resolve) => {
+      participantSocket.onopen = () => {
+        participantSocket.onmessage = (event) => {
+          const chatEvent = JSON.parse(
+            event.data as any,
+          ) as WsResponse<PublicChatMessage>;
 
-    //       console.log('Participant notification');
+          expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
 
-    //       expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
+          resolve();
+        };
+      };
+    });
 
-    //       resolve();
-    //     };
-    //   };
-    // });
+    // Does not notify non participant
+    const nonParticipantSocket = connectToWebsocket(server, {
+      headers: {
+        Authorization: `Bearer ${NON_PARTICIPANT_SERVICE_TOKEN}`,
+      },
+    });
 
-    await Promise.all([senderNotification]);
+    sockets.push(nonParticipantSocket);
+
+    const nonParticipantEmptyNotification = new Promise<void>(
+      (resolve, reject) => {
+        nonParticipantSocket.onopen = () => {
+          resolve();
+
+          nonParticipantSocket.onmessage = (event) => {
+            reject();
+          };
+        };
+      },
+    );
+
+    await Promise.all([creatorNotification, participantNotification]);
+    await nonParticipantEmptyNotification;
 
     // Returns newly created message in list of messages for chat
     return request(server)
       .get(`/chat/${chat.uuid}/messages`)
+      .set('Authorization', `Bearer ${CREATOR_SERVICE_TOKEN}`)
       .expect(200)
       .expect([message!]);
   });

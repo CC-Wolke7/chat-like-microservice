@@ -6,11 +6,12 @@ import { RootModule } from '../../../src/root.module';
 import { WsResponse } from '@nestjs/websockets';
 import { HealthStatus } from '../../../src/app/interfaces/health';
 import {
-  getTestSocket,
+  connectToWebsocket,
   setupWebsocketTest,
   stopWebsocketTest,
   WebsocketTestEnvironment,
 } from '../../util/helper';
+import * as WebSocket from 'ws';
 
 describe('AppGateway (e2e)', () => {
   // MARK: - Properties
@@ -35,7 +36,7 @@ describe('AppGateway (e2e)', () => {
   // MARK: - Tests
   it(`should emit \`${AppEvent.HealthStatus}\` event with payload \`${HealthStatus.Normal}\` on '${AppEvent.HealthRequest}' event`, (done) => {
     const { server } = environment;
-    const socket = getTestSocket(server);
+    const socket = connectToWebsocket(server);
 
     socket.onopen = () => {
       socket.onmessage = (event: WebSocket.MessageEvent) => {

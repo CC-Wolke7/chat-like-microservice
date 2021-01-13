@@ -4,6 +4,7 @@ import { ChatController } from './chat.controller';
 import { ChatGateway } from './gateway/chat.gateway';
 import { ChatService } from './chat.service';
 import { ChatStorage } from './chat.storage';
+import { AuthModule } from '../app/auth/auth.module';
 
 const ChatStorageProvider: Provider = {
   provide: ProviderToken.CHAT_STORAGE,
@@ -16,6 +17,7 @@ const ChatNotificationProvider: Provider = {
 };
 
 @Module({
+  imports: [AuthModule],
   controllers: [ChatController],
   providers: [
     ChatService,

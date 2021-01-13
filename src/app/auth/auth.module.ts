@@ -7,5 +7,6 @@ import { ServiceTokenStrategy } from './strategy/service-token/service-token.str
 @Module({
   imports: [ConfigModule, PassportModule],
   providers: [AnonymousStrategy, ServiceTokenStrategy],
+  exports: [AnonymousStrategy, ServiceTokenStrategy],
 })
 export class AuthModule {}

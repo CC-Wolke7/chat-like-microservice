@@ -2,6 +2,7 @@ import { Strategy } from 'passport-http-bearer';
 import { PassportStrategy } from '@nestjs/passport';
 import {
   Inject,
+  Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import serviceAccountConfig, {
   ServiceAccountConfig,
 } from '../../../config/service-account.config';
 
+@Injectable()
 export class ServiceTokenStrategy extends PassportStrategy(
   Strategy,
   AuthStrategyName.ServiceToken,

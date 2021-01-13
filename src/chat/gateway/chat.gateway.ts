@@ -13,33 +13,31 @@ import * as WebSocket from 'ws';
 import { ChatEvent } from './event';
 import {
   ServiceAccountUser,
-  ServiceAccountName,
   RecommenderBot,
 } from '../../app/auth/interfaces/service-account';
-import { UserType } from '../../app/auth/interfaces/user';
 import { CreateMessageEventPayload } from './interfaces/dto.gateway';
 import { ChatService } from '../chat.service';
 import { ChatGatewayException } from './exception';
 import { HttpAdapterHost } from '@nestjs/core';
 import * as http from 'http';
 import { AuthenticatedWsGateway } from '../../util/AuthenticatedWsGateway';
+import { ServiceTokenStrategy } from '../../app/auth/strategy/service-token/service-token.strategy';
+
+type User = ServiceAccountUser;
+
+type AuthenticatedWebSocket = WebSocket & {
+  user: User;
+};
 
 // @TODO: abstract chat rooms - https://github.com/afertil/nest-chat-api
 // @TODO: detect broken/closed connections via ping/pong - https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
-
-// @TODO: configure path and remove socket.io reference
-// console.log(server);
-
-type AuthenticatedWebSocket = WebSocket & {
-  user: ServiceAccountUser;
-};
-
 @WebSocketGateway()
 export class ChatGateway
-  extends AuthenticatedWsGateway<ServiceAccountUser>
+  extends AuthenticatedWsGateway<User>
   implements OnGatewayDisconnect<WebSocket>, ChatNotificationProvider {
   // MARK: - Private Properties
   private readonly service: ChatService;
+  private readonly serviceTokenStrategy: ServiceTokenStrategy;
 
   private readonly socketForUser = new Map<
     UserUUID,
@@ -47,26 +45,30 @@ export class ChatGateway
   >();
 
   // MARK: - Initialization
-  constructor(adapterHost: HttpAdapterHost, service: ChatService) {
+  constructor(
+    adapterHost: HttpAdapterHost,
+    service: ChatService,
+    serviceTokenStrategy: ServiceTokenStrategy,
+  ) {
     super(adapterHost);
 
     this.service = service;
+    this.serviceTokenStrategy = serviceTokenStrategy;
   }
 
   // MARK: - Public Methods
   // MARK: AuthenticatedWsGateway
-  async verifyUser(
-    request: http.IncomingMessage,
-  ): Promise<ServiceAccountUser | undefined> {
-    // @TODO: https://github.com/nestjs/nest/issues/882#issuecomment-653237579
-    // @TODO: retrieve user by headers
-    const user: ServiceAccountUser = {
-      type: UserType.ServiceAccount,
-      name: ServiceAccountName.UnitTest,
-      uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
-    };
+  async verifyUser(request: http.IncomingMessage): Promise<User | undefined> {
+    // @TODO: add JWT & recommender bot guard
+    const bearerToken = request.headers.authorization?.replace('Bearer ', '');
 
-    return user;
+    if (!bearerToken) {
+      return undefined;
+    }
+
+    return this.serviceTokenStrategy.validate(
+      bearerToken,
+    ) as ServiceAccountUser;
   }
 
   // MARK: Lifecycle

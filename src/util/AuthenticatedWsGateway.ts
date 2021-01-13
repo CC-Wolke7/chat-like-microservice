@@ -46,7 +46,7 @@ export abstract class AuthenticatedWsGateway<T>
             server.emit('connection', websocket, request, user);
           });
         } catch {
-          return this.abortHandshake(socket, 500);
+          this.abortHandshake(socket, 401);
         }
       },
     );
