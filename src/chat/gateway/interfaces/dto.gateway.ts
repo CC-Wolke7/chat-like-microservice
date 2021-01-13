@@ -4,8 +4,8 @@ import { ChatUUID } from '../../interfaces/storage';
 // MARK: - Event Payload
 export class CreateMessageEventPayload {
   @IsUUID(4)
-  chat: ChatUUID;
+  readonly chat: ChatUUID;
 
   @IsString()
-  message: string;
+  readonly message: string;
 }

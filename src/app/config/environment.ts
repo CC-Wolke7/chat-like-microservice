@@ -3,10 +3,10 @@ import { IsString, IsUUID, validateSync } from 'class-validator';
 
 export class Environment {
   @IsString()
-  RECOMMENDER_BOT_TOKEN: string;
+  readonly RECOMMENDER_BOT_TOKEN: string;
 
   @IsUUID(4)
-  RECOMMENDER_BOT_USER_UUID: string;
+  readonly RECOMMENDER_BOT_USER_UUID: string;
 }
 
 export function validate(config: Record<string, unknown>): Environment {
