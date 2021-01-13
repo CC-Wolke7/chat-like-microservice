@@ -21,7 +21,7 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
   // MARK: - Hooks
   beforeEach(async () => {
-    environment = await setupChatWebsocketTest(user, 3001);
+    environment = await setupChatWebsocketTest(user, 4000);
   });
 
   afterEach(async () => {

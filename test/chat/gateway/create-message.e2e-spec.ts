@@ -30,7 +30,7 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
   // MARK: - Hooks
   beforeEach(async () => {
-    environment = await setupChatWebsocketTest(user, 3001);
+    environment = await setupChatWebsocketTest(user, 4001);
   });
 
   afterEach(async () => {
@@ -73,14 +73,14 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
     const senderNotification = new Promise<void>((resolve) => {
       socket.onopen = () => {
-        console.log('Sender connected');
+        // console.log('Sender connected');
 
         socket.onmessage = (event) => {
           const chatEvent = JSON.parse(
             event.data as any,
           ) as WsResponse<PublicChatMessage>;
 
-          console.log('Sender notification');
+          // console.log('Sender notification');
 
           const keys = Object.keys(chatEvent.data);
           const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
