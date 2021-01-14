@@ -10,18 +10,20 @@ import {
 import { ChatNotificationProvider } from '../interfaces/notification';
 import { Chat, ChatMessage, ChatUUID, UserUUID } from '../interfaces/storage';
 import * as WebSocket from 'ws';
-import { ChatEvent } from './event';
+import { ChatEvent } from './chat.gateway.event';
 import {
   ServiceAccountUser,
   RecommenderBot,
 } from '../../app/auth/interfaces/service-account';
 import { CreateMessageEventPayload } from './interfaces/dto.gateway';
 import { ChatService } from '../chat.service';
-import { ChatGatewayException } from './exception';
+import { ChatException } from '../chat.exception';
 import { HttpAdapterHost } from '@nestjs/core';
 import * as http from 'http';
 import { AuthenticatedWsGateway } from '../../util/AuthenticatedWsGateway';
 import { ServiceTokenStrategy } from '../../app/auth/strategy/service-token/service-token.strategy';
+import { UseFilters } from '@nestjs/common';
+import { ChatGatewayExceptionFilter } from './chat.gateway.filter';
 
 type User = ServiceAccountUser;
 
@@ -31,6 +33,7 @@ type AuthenticatedWebSocket = WebSocket & {
 
 // @TODO: abstract chat rooms - https://github.com/afertil/nest-chat-api
 // @TODO: detect broken/closed connections via ping/pong - https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
+@UseFilters(new ChatGatewayExceptionFilter())
 @WebSocketGateway()
 export class ChatGateway
   extends AuthenticatedWsGateway<User>
@@ -164,7 +167,7 @@ export class ChatGateway
     const chat = await this.service.getChat(uuid);
 
     if (!chat) {
-      throw new WsException(ChatGatewayException.ChatNotFound);
+      throw new WsException(ChatException.ChatNotFound);
     }
 
     return chat;

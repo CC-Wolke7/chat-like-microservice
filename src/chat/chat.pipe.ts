@@ -6,6 +6,7 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { ProviderToken } from '../provider';
+import { ChatException } from './chat.exception';
 import { Chat, ChatStorageProvider } from './interfaces/storage';
 
 @Injectable()
@@ -25,7 +26,7 @@ export class ChatByUUIDPipe implements PipeTransform {
     const chat = await this.chatStorage.findChat((chat) => chat.uuid === value);
 
     if (!chat) {
-      throw new NotFoundException();
+      throw new NotFoundException(ChatException.ChatNotFound);
     }
 
     return chat;

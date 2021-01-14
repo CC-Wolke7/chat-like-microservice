@@ -1,11 +1,11 @@
-import { ChatEvent } from '../../../src/chat/gateway/event';
+import { ChatEvent } from '../../src/chat/gateway/chat.gateway.event';
 import { WsResponse } from '@nestjs/websockets';
-import { CreateChatPayload } from '../../../src/chat/interfaces/dto';
+import { CreateChatPayload } from '../../src/chat/interfaces/dto';
 import * as request from 'supertest';
-import { PublicChat, PublicChatMessage } from '../interfaces/chat';
-import { CreateMessageEventPayload } from '../../../src/chat/gateway/interfaces/dto.gateway';
+import { PublicChat, PublicChatMessage } from './interfaces/chat';
+import { CreateMessageEventPayload } from '../../src/chat/gateway/interfaces/dto.gateway';
 import { isValidISODateString } from 'iso-datestring-validator';
-import { equalSet } from '../../../src/util/helper';
+import { equalSet } from '../../src/util/helper';
 import {
   connectToWebsocket,
   CREATOR_SERVICE_TOKEN,
@@ -15,8 +15,9 @@ import {
   stopWebsocketTest,
   TEST_SERVICE_ACCOUNT_CONFIG,
   WebsocketTestEnvironment,
-} from '../../util/helper';
+} from '../util/helper';
 import * as WebSocket from 'ws';
+import { ChatException } from '../../src/chat/chat.exception';
 
 describe('ChatGateway (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -37,7 +38,62 @@ describe('ChatGateway (e2e) [authenticated]', () => {
   });
 
   // MARK: - Tests
-  it('should create message and only notify chat participants (including creator)', async () => {
+  it('should connect', (done) => {
+    const { server } = environment;
+
+    const socket = connectToWebsocket(server, {
+      headers: {
+        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
+      },
+    });
+
+    sockets.push(socket);
+
+    socket.on('open', () => {
+      done();
+    });
+  });
+
+  it('`CREATE_MESSAGE` should fail if chat does not exist', async () => {
+    const { server } = environment;
+
+    const createMessageEventPayload: CreateMessageEventPayload = {
+      chat: 'a35fe77b-7d4f-4da2-8d5d-271cf9d82fee',
+      message: 'hello',
+    };
+
+    const createMessageEvent: WsResponse<CreateMessageEventPayload> = {
+      event: ChatEvent.CreateMessage,
+      data: createMessageEventPayload,
+    };
+
+    const creatorSocket = connectToWebsocket(server, {
+      headers: {
+        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
+      },
+    });
+
+    sockets.push(creatorSocket);
+
+    await new Promise<void>((resolve) => {
+      creatorSocket.onopen = () => {
+        creatorSocket.onmessage = (event) => {
+          const chatEvent = JSON.parse(
+            event.data as any,
+          ) as WsResponse<ChatException>;
+
+          expect(chatEvent.event).toEqual(ChatEvent.ChatError);
+          expect(chatEvent.data).toEqual(ChatException.ChatNotFound);
+
+          resolve();
+        };
+
+        creatorSocket.send(JSON.stringify(createMessageEvent));
+      };
+    });
+  });
+
+  it('`CREATE_MESSAGE` should succeed and only notify chat participants (including creator)', async () => {
     const { server } = environment;
 
     const createChatPayload: CreateChatPayload = {
@@ -141,20 +197,18 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
     sockets.push(nonParticipantSocket);
 
-    const nonParticipantEmptyNotification = new Promise<void>(
-      (resolve, reject) => {
-        nonParticipantSocket.onopen = () => {
-          resolve();
+    const nonParticipantEvents: any[] = [];
 
-          nonParticipantSocket.onmessage = (event) => {
-            reject();
-          };
-        };
-      },
-    );
+    nonParticipantSocket.onopen = () => {
+      nonParticipantSocket.onmessage = (event) => {
+        const chatEvent = JSON.parse(event.data as any) as WsResponse<any>;
+
+        nonParticipantEvents.push(chatEvent);
+      };
+    };
 
     await Promise.all([creatorNotification, participantNotification]);
-    await nonParticipantEmptyNotification;
+    expect(nonParticipantEvents.length).toEqual(0);
 
     // Returns newly created message in list of messages for chat
     return request(server)

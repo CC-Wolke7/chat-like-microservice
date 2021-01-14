@@ -3,8 +3,8 @@ import {
   WebSocketGateway,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { AppEvent } from './event';
-import { HealthStatus } from './interfaces/health';
+import { AppEvent } from './app.gateway.event';
+import { HealthStatus } from '../interfaces/health';
 import * as WebSocket from 'ws';
 
 @WebSocketGateway()

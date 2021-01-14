@@ -8,7 +8,7 @@ import { AuthenticatedUser, UserType } from '../app/auth/interfaces/user';
 import { ProviderToken } from '../provider';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
-import { ChatGatewayMock } from './__mocks__/chat.gateway';
+import { ChatGatewayMock } from './gateway/__mocks__/chat.gateway';
 import { ChatStorageMock } from './__mocks__/chat.storage';
 
 describe('ChatController', () => {

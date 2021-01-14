@@ -7,6 +7,7 @@ import {
   ChatMessageFilter,
 } from './interfaces/storage';
 
+// @TODO: connect to Google Firestore
 @Injectable()
 export class ChatStorage implements ChatStorageProvider {
   // MARK: - Public Properties

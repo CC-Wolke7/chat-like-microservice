@@ -9,6 +9,7 @@ import { RecommenderBot } from '../app/auth/interfaces/service-account';
 import { AuthenticatedUser } from '../app/auth/interfaces/user';
 import { ProviderToken } from '../provider';
 import { equalSet } from '../util/helper';
+import { ChatException } from './chat.exception';
 import {
   ChatStorageProvider,
   UserUUID,
@@ -62,7 +63,7 @@ export class ChatService {
     assert(existingChats.length <= 1);
 
     if (existingChats.length > 0) {
-      throw new ConflictException();
+      throw new ConflictException(ChatException.ChatAlreadyExists);
     }
 
     const chat = await this.storage.createChat({
@@ -94,9 +95,7 @@ export class ChatService {
 
   checkParticipation(chat: Chat, user: UserUUID): void {
     if (!chat.participants.includes(user)) {
-      // @TODO: move to global exception handler
-      // throw new WsException(ChatGatewayException.Forbidden);
-      throw new ForbiddenException();
+      throw new ForbiddenException(ChatException.NotParticipant);
     }
   }
 }

@@ -1,5 +1,5 @@
-import { ChatNotificationProvider } from '../interfaces/notification';
-import { Chat, ChatMessage } from '../interfaces/storage';
+import { ChatNotificationProvider } from '../../interfaces/notification';
+import { Chat, ChatMessage } from '../../interfaces/storage';
 
 export class ChatGatewayMock implements ChatNotificationProvider {
   // MARK: - Private Properties

@@ -5,8 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserEntity } from '../interfaces/user';
-import { WsException } from '@nestjs/websockets';
-import { ChatGatewayException } from '../../../chat/gateway/exception';
 
 @Injectable()
 export class AuthGuardMock implements CanActivate {
@@ -21,12 +19,7 @@ export class AuthGuardMock implements CanActivate {
   // MARK: - Public Methods
   canActivate(context: ExecutionContext): boolean {
     if (!this.user) {
-      if (context.getType() === 'ws') {
-        // @TODO: move to global exception handler
-        throw new WsException(ChatGatewayException.Unauthorized);
-      } else {
-        throw new UnauthorizedException();
-      }
+      throw new UnauthorizedException();
     }
 
     const request = context.switchToHttp().getRequest();
