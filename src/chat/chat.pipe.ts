@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ProviderToken } from '../provider';
 import { ChatException } from './chat.exception';
-import { Chat, ChatStorageProvider } from './interfaces/storage';
+import { ChatModel, ChatStorageProvider } from './interfaces/storage';
 
 @Injectable()
 export class ChatByUUIDPipe implements PipeTransform {
@@ -22,7 +22,10 @@ export class ChatByUUIDPipe implements PipeTransform {
   }
 
   // MAKR: - Public Methods
-  async transform(value: string, metadata: ArgumentMetadata): Promise<Chat> {
+  async transform(
+    value: string,
+    metadata: ArgumentMetadata,
+  ): Promise<ChatModel> {
     const chat = await this.chatStorage.findChat((chat) => chat.uuid === value);
 
     if (!chat) {

@@ -1,15 +1,18 @@
 import { ChatNotificationProvider } from '../../interfaces/notification';
-import { Chat, ChatMessage } from '../../interfaces/storage';
+import { ChatModel, ChatMessageModel } from '../../interfaces/storage';
 
 export class ChatGatewayMock implements ChatNotificationProvider {
   // MARK: - Private Properties
   // MARK: - Public Methods
   // MARK: Chat Notification Provider
-  async notifyChatCreated(chat: Chat): Promise<void> {
+  async notifyChatCreated(chat: ChatModel): Promise<void> {
     // send chat to chat participants (excluding creator)
   }
 
-  async notifyMessageCreated(chat: Chat, message: ChatMessage): Promise<void> {
+  async notifyMessageCreated(
+    chat: ChatModel,
+    message: ChatMessageModel,
+  ): Promise<void> {
     // send message to chat participants (excluding sender)
   }
 }

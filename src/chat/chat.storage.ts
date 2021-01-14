@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   ChatStorageProvider,
-  Chat,
-  ChatMessage,
+  ChatModel,
+  ChatMessageModel,
   ChatFilter,
   ChatMessageFilter,
 } from './interfaces/storage';
@@ -11,31 +11,31 @@ import {
 @Injectable()
 export class ChatStorage implements ChatStorageProvider {
   // MARK: - Public Properties
-  async findChat(filter: ChatFilter): Promise<Chat | undefined> {
+  async findChat(filter: ChatFilter): Promise<ChatModel | undefined> {
     throw new Error('not implemented');
   }
 
-  async findChats(filter: ChatFilter): Promise<Chat[]> {
+  async findChats(filter: ChatFilter): Promise<ChatModel[]> {
     throw new Error('not implemented');
   }
 
-  async createChat(payload: Omit<Chat, 'uuid'>): Promise<Chat> {
+  async createChat(payload: Omit<ChatModel, 'uuid'>): Promise<ChatModel> {
     throw new Error('not implemented');
   }
 
   async findMessage(
     filter: ChatMessageFilter,
-  ): Promise<ChatMessage | undefined> {
+  ): Promise<ChatMessageModel | undefined> {
     throw new Error('not implemented');
   }
 
-  async findMessages(filter: ChatMessageFilter): Promise<ChatMessage[]> {
+  async findMessages(filter: ChatMessageFilter): Promise<ChatMessageModel[]> {
     throw new Error('not implemented');
   }
 
   async createMessage(
-    payload: Omit<ChatMessage, 'uuid'>,
-  ): Promise<ChatMessage> {
+    payload: Omit<ChatMessageModel, 'uuid'>,
+  ): Promise<ChatMessageModel> {
     throw new Error('not implemented');
   }
 }

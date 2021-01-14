@@ -1,6 +1,6 @@
-import { Chat, ChatMessage } from '../interfaces/storage';
+import { ChatModel, ChatMessageModel } from '../interfaces/storage';
 
-export const CHATS: Chat[] = [
+export const CHATS: ChatModel[] = [
   {
     uuid: 'chat-1',
     creator: 'user-1',
@@ -8,7 +8,7 @@ export const CHATS: Chat[] = [
   },
 ];
 
-export const CHAT_MESSAGES: ChatMessage[] = [
+export const CHAT_MESSAGES: ChatMessageModel[] = [
   {
     uuid: 'message-1',
     chat: 'chat-1',

@@ -1,9 +1,9 @@
 import { ChatEvent } from '../../src/chat/gateway/chat.gateway.event';
 import { WsResponse } from '@nestjs/websockets';
-import { CreateChatPayload } from '../../src/chat/interfaces/dto';
+import { CreateChatPayload } from '../../src/chat/chat.dto';
 import * as request from 'supertest';
 import { PublicChat, PublicChatMessage } from './interfaces/chat';
-import { CreateMessageEventPayload } from '../../src/chat/gateway/interfaces/dto.gateway';
+import { CreateMessageEventPayload } from '../../src/chat/gateway/chat.gateway.dto';
 import { isValidISODateString } from 'iso-datestring-validator';
 import { equalSet } from '../../src/util/helper';
 import {
