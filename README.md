@@ -1,5 +1,7 @@
 # Chat-Microservice
 
+OpenAPI specification available at `http://localhost:3000/docs/`.
+
 ## Installation
 
 ```bash
