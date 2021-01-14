@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import {
   CreateChatPayload,
   CreateMessagePayload,
-} from '../../src/chat/interfaces/dto';
+} from '../../src/chat/chat.dto';
 import { PublicChat, PublicChatMessage } from './interfaces/chat';
 import { equalSet, isValidUUID } from '../../src/util/helper';
 import { ProviderToken } from '../../src/provider';

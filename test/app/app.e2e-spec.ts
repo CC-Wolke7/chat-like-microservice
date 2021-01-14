@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { RootModule } from '../../src/root.module';
+import { HealthStatus } from '../../src/app/interfaces/health';
 
 describe('AppController (e2e)', () => {
   // MARK: - Properties
@@ -19,6 +20,9 @@ describe('AppController (e2e)', () => {
 
   // MARK: - Tests
   it('/health (GET)', () => {
-    return request(app.getHttpServer()).get('/health').expect(200).expect('OK');
+    return request(app.getHttpServer())
+      .get('/health')
+      .expect(200)
+      .expect({ status: HealthStatus.Normal });
   });
 });

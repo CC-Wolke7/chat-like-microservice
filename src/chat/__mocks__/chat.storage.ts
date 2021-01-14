@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   ChatStorageProvider,
-  Chat,
-  ChatMessage,
+  ChatModel,
+  ChatMessageModel,
   ChatFilter,
   ChatMessageFilter,
 } from '../interfaces/storage';
@@ -12,24 +12,24 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class ChatStorageMock implements ChatStorageProvider {
   // MARK: - Private Properties
-  private chats: Chat[] = []; // = CHATS;
-  private messages: ChatMessage[] = []; // = CHAT_MESSAGES;
+  private chats: ChatModel[] = []; // = CHATS;
+  private messages: ChatMessageModel[] = []; // = CHAT_MESSAGES;
 
   // MARK: - Public Methods
   // MARK: Chat Storage Provider
-  async findChat(filter: ChatFilter): Promise<Chat | undefined> {
+  async findChat(filter: ChatFilter): Promise<ChatModel | undefined> {
     const chats = await this.findChats(filter);
 
     return this.getFirstOrNone(chats);
   }
 
-  async findChats(filter: (chat: Chat) => boolean): Promise<Chat[]> {
+  async findChats(filter: (chat: ChatModel) => boolean): Promise<ChatModel[]> {
     return this.chats.filter(filter);
   }
 
-  async createChat(payload: Omit<Chat, 'uuid'>): Promise<Chat> {
+  async createChat(payload: Omit<ChatModel, 'uuid'>): Promise<ChatModel> {
     const uuid = uuidv4();
-    const chat: Chat = { ...payload, uuid };
+    const chat: ChatModel = { ...payload, uuid };
 
     this.chats.push(chat);
 
@@ -38,21 +38,21 @@ export class ChatStorageMock implements ChatStorageProvider {
 
   async findMessage(
     filter: ChatMessageFilter,
-  ): Promise<ChatMessage | undefined> {
+  ): Promise<ChatMessageModel | undefined> {
     const messages = await this.findMessages(filter);
 
     return this.getFirstOrNone(messages);
   }
 
-  async findMessages(filter: ChatMessageFilter): Promise<ChatMessage[]> {
+  async findMessages(filter: ChatMessageFilter): Promise<ChatMessageModel[]> {
     return this.messages.filter(filter);
   }
 
   async createMessage(
-    payload: Omit<ChatMessage, 'uuid'>,
-  ): Promise<ChatMessage> {
+    payload: Omit<ChatMessageModel, 'uuid'>,
+  ): Promise<ChatMessageModel> {
     const uuid = uuidv4();
-    const message: ChatMessage = { ...payload, uuid };
+    const message: ChatMessageModel = { ...payload, uuid };
 
     this.messages.push(message);
 

@@ -8,14 +8,19 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { ChatNotificationProvider } from '../interfaces/notification';
-import { Chat, ChatMessage, ChatUUID, UserUUID } from '../interfaces/storage';
+import {
+  ChatModel,
+  ChatMessageModel,
+  ChatUUID,
+  UserUUID,
+} from '../interfaces/storage';
 import * as WebSocket from 'ws';
 import { ChatEvent } from './chat.gateway.event';
 import {
   ServiceAccountUser,
   RecommenderBot,
 } from '../../app/auth/interfaces/service-account';
-import { CreateMessageEventPayload } from './interfaces/dto.gateway';
+import { CreateMessageEventPayload } from './chat.gateway.dto';
 import { ChatService } from '../chat.service';
 import { ChatException } from '../chat.exception';
 import { HttpAdapterHost } from '@nestjs/core';
@@ -109,8 +114,11 @@ export class ChatGateway
   }
 
   // MARK: Chat Notification Provider
-  async notifyChatCreated(chat: Chat, includeCreator = true): Promise<void> {
-    const payload: WsResponse<Chat> = {
+  async notifyChatCreated(
+    chat: ChatModel,
+    includeCreator = true,
+  ): Promise<void> {
+    const payload: WsResponse<ChatModel> = {
       event: ChatEvent.ChatCreated,
       data: chat,
     };
@@ -126,11 +134,11 @@ export class ChatGateway
   }
 
   async notifyMessageCreated(
-    chat: Chat,
-    message: ChatMessage,
+    chat: ChatModel,
+    message: ChatMessageModel,
     includeSender = true,
   ): Promise<void> {
-    const payload: WsResponse<ChatMessage> = {
+    const payload: WsResponse<ChatMessageModel> = {
       event: ChatEvent.MessageCreated,
       data: message,
     };
@@ -162,7 +170,7 @@ export class ChatGateway
     }
   }
 
-  private async getChat(uuid: ChatUUID): Promise<Chat> {
+  private async getChat(uuid: ChatUUID): Promise<ChatModel> {
     // @TODO: add caching mechanism to reduce number of DB calls
     const chat = await this.service.getChat(uuid);
 
