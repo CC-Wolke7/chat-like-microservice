@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FirestoreChatStorage } from './chat.storage';
+import { FirestoreChatStorage } from './firestore-chat.storage';
 import {
   ChatMessageModel,
   ChatModel,
   ChatPrototype,
-} from './interfaces/storage';
+} from '../../interfaces/storage';
+import { equalSet } from '../../../util/helper';
 
 describe('FirestoreChatStorage', () => {
   // MARK: - Properties
@@ -40,6 +41,12 @@ describe('FirestoreChatStorage', () => {
 
       const chat = await storage.createChat(createChatPayload);
 
+      const expectedKeys = ['uuid', 'creator', 'participants'];
+      const keys = Object.keys(chat);
+
+      expect(keys.length).toEqual(expectedKeys.length);
+      expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
+
       expect(chat.uuid).toEqual(expect.any(String));
       expect(chat.creator).toEqual(createChatPayload.creator);
       expect(chat.participants).toEqual(createChatPayload.participants);
@@ -51,6 +58,11 @@ describe('FirestoreChatStorage', () => {
       expect(storedChat!.uuid).toEqual(chat.uuid);
       expect(storedChat!.creator).toEqual(createChatPayload.creator);
       expect(storedChat!.participants).toEqual(createChatPayload.participants);
+
+      const storedKeys = Object.keys(storedChat!);
+
+      expect(storedKeys.length).toEqual(expectedKeys.length);
+      expect(equalSet(new Set(storedKeys), new Set(expectedKeys))).toBeTruthy();
     });
 
     it('should return empty array if no messages exist for chat', async () => {
@@ -67,6 +79,12 @@ describe('FirestoreChatStorage', () => {
 
       const message = await storage.createMessage(createMessagePayload);
 
+      const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
+      const keys = Object.keys(message);
+
+      expect(keys.length).toEqual(expectedKeys.length);
+      expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
+
       expect(message.uuid).toEqual(expect.any(String));
       expect(message.chat).toEqual(createMessagePayload.chat);
       expect(message.sender).toEqual(createMessagePayload.sender);
@@ -80,9 +98,13 @@ describe('FirestoreChatStorage', () => {
       expect(storedMessage!.uuid).toEqual(message.uuid);
       expect(storedMessage!.chat).toEqual(createMessagePayload.chat);
       expect(storedMessage!.sender).toEqual(createMessagePayload.sender);
-      // @TODO: serialize dates
-      // expect(storedMessage!.date).toEqual(createMessagePayload.date);
+      expect(storedMessage!.date).toEqual(createMessagePayload.date);
       expect(storedMessage!.body).toEqual(createMessagePayload.body);
+
+      const storedKeys = Object.keys(storedMessage!);
+
+      expect(storedKeys.length).toEqual(expectedKeys.length);
+      expect(equalSet(new Set(storedKeys), new Set(expectedKeys))).toBeTruthy();
 
       // Should be added to list of messages for `chat-1`
       const chatMessages = await storage.findMessagesByChat(

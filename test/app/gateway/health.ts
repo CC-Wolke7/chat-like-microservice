@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProviderToken } from '../../../src/provider';
-import { ChatStorageMock } from '../../../src/chat/__mocks__/chat.storage';
+import { InMemoryChatStorage } from '../../../src/chat/storage/memory/memory-chat.storage';
 import { AppEvent } from '../../../src/app/gateway/app.gateway.event';
 import { RootModule } from '../../../src/root.module';
 import { WsResponse } from '@nestjs/websockets';
@@ -23,7 +23,7 @@ describe('AppGateway (e2e)', () => {
       imports: [RootModule],
     })
       .overrideProvider(ProviderToken.CHAT_STORAGE)
-      .useClass(ChatStorageMock)
+      .useClass(InMemoryChatStorage)
       .compile();
 
     environment = await setupWebsocketTest(moduleFixture, 3001);

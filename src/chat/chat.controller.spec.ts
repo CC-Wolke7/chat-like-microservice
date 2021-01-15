@@ -9,7 +9,7 @@ import { ProviderToken } from '../provider';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { ChatGatewayMock } from './gateway/__mocks__/chat.gateway';
-import { ChatStorageMock } from './__mocks__/chat.storage';
+import { InMemoryChatStorage } from './storage/memory/memory-chat.storage';
 
 describe('ChatController', () => {
   // MARK: - Properties
@@ -25,7 +25,7 @@ describe('ChatController', () => {
   beforeEach(async () => {
     const ChatStorageProvider: Provider = {
       provide: ProviderToken.CHAT_STORAGE,
-      useClass: ChatStorageMock,
+      useClass: InMemoryChatStorage,
     };
 
     const ChatNotificationProvider: Provider = {

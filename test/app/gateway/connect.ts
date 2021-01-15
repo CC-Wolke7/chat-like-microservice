@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as WebSocket from 'ws';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { ChatStorageMock } from '../../../src/chat/__mocks__/chat.storage';
+import { InMemoryChatStorage } from '../../../src/chat/storage/memory/memory-chat.storage';
 import { ProviderToken } from '../../../src/provider';
 import { RootModule } from '../../../src/root.module';
 // import { io, Socket } from 'socket.io-client';
@@ -24,7 +24,7 @@ describe('AppGateway (e2e)', () => {
       imports: [RootModule],
     })
       .overrideProvider(ProviderToken.CHAT_STORAGE)
-      .useClass(ChatStorageMock)
+      .useClass(InMemoryChatStorage)
       .compile();
 
     app = moduleFixture.createNestApplication();

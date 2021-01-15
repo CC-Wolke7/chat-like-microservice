@@ -8,19 +8,18 @@ import {
   ChatPrototype,
   ChatMessagePrototype,
   UserUUID,
-} from '../interfaces/storage';
+} from '../../interfaces/storage';
 import { v4 as uuidv4 } from 'uuid';
-import { equalSet } from '../../util/helper';
-// import { CHATS, CHAT_MESSAGES } from './data';
+import { equalSet } from '../../../util/helper';
 
 type ChatFilter = (chat: ChatModel) => boolean;
 type ChatMessageFilter = (message: ChatMessageModel) => boolean;
 
 @Injectable()
-export class ChatStorageMock implements ChatStorageProvider {
+export class InMemoryChatStorage implements ChatStorageProvider {
   // MARK: - Private Properties
-  private chats: ChatModel[] = []; // = CHATS;
-  private messages: ChatMessageModel[] = []; // = CHAT_MESSAGES;
+  private chats: ChatModel[] = [];
+  private messages: ChatMessageModel[] = [];
 
   // MARK: - Public Methods
   // MARK: Chat

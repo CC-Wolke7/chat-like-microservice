@@ -8,18 +8,16 @@ import {
   UserUUID,
   ChatPrototype,
   ChatMessagePrototype,
-} from './interfaces/storage';
+} from '../../interfaces/storage';
 import { Firestore } from '@google-cloud/firestore';
 import * as crypto from 'crypto';
+import { ChatConverter, MessageConverter } from './converter';
 
-type FirestoreChatModel = Omit<
-  ChatModel & {
-    participantsHash: string;
-  },
-  'uuid'
->;
+export type FirestoreChatModel = Omit<ChatModel, 'uuid'> & {
+  participantsHash: string;
+};
 
-type FirestoreChatMessageModel = Omit<ChatMessageModel, 'uuid'>;
+export type FirestoreChatMessageModel = Omit<ChatMessageModel, 'uuid'>;
 
 enum FirestoreCollectionPath {
   Chats = 'chats',
@@ -31,24 +29,24 @@ export class FirestoreChatStorage implements ChatStorageProvider {
   // MARK: - Private Properties
   private readonly firestore = new Firestore();
 
-  private readonly chats = this.firestore.collection(
-    FirestoreCollectionPath.Chats,
-  );
+  private readonly chats = this.firestore
+    .collection(FirestoreCollectionPath.Chats)
+    .withConverter(ChatConverter);
 
-  private readonly messages = this.firestore.collection(
-    FirestoreCollectionPath.Messages,
-  );
+  private readonly messages = this.firestore
+    .collection(FirestoreCollectionPath.Messages)
+    .withConverter(MessageConverter);
 
   // MARK: - Public Methods
   async reset(): Promise<void> {
-    const chatDocuments = await this.chats.listDocuments();
+    const chatDocumentRefs = await this.chats.listDocuments();
     await Promise.all(
-      chatDocuments.map((chatDocument) => chatDocument.delete()),
+      chatDocumentRefs.map((chatDocument) => chatDocument.delete()),
     );
 
-    const messageDocuments = await this.messages.listDocuments();
+    const messageDocumentRefs = await this.messages.listDocuments();
     await Promise.all(
-      messageDocuments.map((messageDocument) => messageDocument.delete()),
+      messageDocumentRefs.map((messageDocument) => messageDocument.delete()),
     );
   }
 
@@ -58,30 +56,22 @@ export class FirestoreChatStorage implements ChatStorageProvider {
 
   // MARK: Chat
   async getChat(uuid: ChatUUID): Promise<ChatModel | undefined> {
-    const chatDocument = await this.chats.doc(uuid).get();
-
-    if (!chatDocument.exists) {
-      return undefined;
-    }
-
-    return this.deserializeChat(chatDocument);
+    return this.toChat(await this.chats.doc(uuid).get());
   }
 
   async createChat(prototype: ChatPrototype): Promise<ChatModel> {
-    const participantsHash = this.getParticipantHash(
-      new Set(prototype.participants),
-    );
-
     const model: FirestoreChatModel = {
       ...prototype,
-      participantsHash,
+      participantsHash: this.getParticipantHash(
+        new Set(prototype.participants),
+      ),
     };
 
-    const chatDocument = await this.chats.add(model);
+    const chatDocumentRef = await this.chats.add(model);
 
     return {
       ...prototype,
-      uuid: chatDocument.id,
+      uuid: chatDocumentRef.id,
     };
   }
 
@@ -92,20 +82,20 @@ export class FirestoreChatStorage implements ChatStorageProvider {
     if (strictEqual) {
       const participantsHash = this.getParticipantHash(participants);
 
-      const chatDocumentsRef = await this.chats
+      const chatDocumentsSnapshot = await this.chats
         .where('participantsHash', '==', participantsHash)
         .get();
 
-      return chatDocumentsRef.docs.map((chatDocument) =>
-        this.deserializeChat(chatDocument),
+      return chatDocumentsSnapshot.docs.map(
+        (chatDocument) => this.toChat(chatDocument)!,
       );
     } else {
-      const chatDocumentsRef = await this.chats
+      const chatDocumentsSnapshot = await this.chats
         .where('participants', 'array-contains-any', Array.from(participants))
         .get();
 
-      return chatDocumentsRef.docs
-        .map((chatDocument) => this.deserializeChat(chatDocument))
+      return chatDocumentsSnapshot.docs
+        .map((chatDocument) => this.toChat(chatDocument)!)
         .filter((chat) =>
           Array.from(participants).every((participant) =>
             chat.participants.includes(participant),
@@ -118,13 +108,7 @@ export class FirestoreChatStorage implements ChatStorageProvider {
   async getMessage(
     uuid: ChatMessageUUID,
   ): Promise<ChatMessageModel | undefined> {
-    const messageDocument = await this.messages.doc(uuid).get();
-
-    if (!messageDocument.exists) {
-      return undefined;
-    }
-
-    return this.deserializeMessage(messageDocument);
+    return this.toMessage(await this.messages.doc(uuid).get());
   }
 
   async createMessage(
@@ -134,20 +118,20 @@ export class FirestoreChatStorage implements ChatStorageProvider {
       ...prototype,
     };
 
-    const messageDocument = await this.messages.add(model);
+    const messageDocumentRef = await this.messages.add(model);
 
     return {
       ...prototype,
-      uuid: messageDocument.id,
+      uuid: messageDocumentRef.id,
     };
   }
 
   async findMessagesByChat(chat: ChatUUID): Promise<ChatMessageModel[]> {
-    const messageDocumentsRef = await this.messages
+    const messageDocumentsSnapshot = await this.messages
       .where('chat', '==', chat)
       .get();
 
-    return messageDocumentsRef.docs.map((doc) => this.deserializeMessage(doc));
+    return messageDocumentsSnapshot.docs.map((doc) => this.toMessage(doc)!);
   }
 
   // MARK: - Private Methods
@@ -163,24 +147,38 @@ export class FirestoreChatStorage implements ChatStorageProvider {
   }
 
   // MARK: Chat
-  // @TODO: de/serialize date objects
-  // @TODO: filter out non Chat(Message)Model fields
-  private deserializeChat(
-    document: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>,
-  ): ChatModel {
+  private toChat(
+    document: FirebaseFirestore.DocumentSnapshot<FirestoreChatModel>,
+  ): ChatModel | undefined {
+    if (!document.exists) {
+      return undefined;
+    }
+
+    const model = document.data()!;
+
     return {
-      ...(document.data() as FirestoreChatModel),
       uuid: document.id,
+      creator: model.creator,
+      participants: model.participants,
     };
   }
 
   // MARK: Message
-  private deserializeMessage(
-    document: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>,
-  ): ChatMessageModel {
+  private toMessage(
+    document: FirebaseFirestore.DocumentSnapshot<FirestoreChatMessageModel>,
+  ): ChatMessageModel | undefined {
+    if (!document.exists) {
+      return undefined;
+    }
+
+    const model = document.data()!;
+
     return {
-      ...(document.data() as FirestoreChatMessageModel),
       uuid: document.id,
+      chat: model.chat,
+      sender: model.sender,
+      date: model.date,
+      body: model.body,
     };
   }
 }

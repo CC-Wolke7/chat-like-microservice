@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as WebSocket from 'ws';
-import { ChatStorageMock } from '../../src/chat/__mocks__/chat.storage';
+import { InMemoryChatStorage } from '../../src/chat/storage/memory/memory-chat.storage';
 import { ProviderToken } from '../../src/provider';
 import { RootModule } from '../../src/root.module';
 import serviceAccountConfig, {
@@ -96,7 +96,7 @@ export async function setupChatWebsocketTest(
     imports: [RootModule],
   })
     .overrideProvider(ProviderToken.CHAT_STORAGE)
-    .useClass(ChatStorageMock)
+    .useClass(InMemoryChatStorage)
     .overrideProvider(serviceAccountConfig.KEY)
     .useValue(TEST_SERVICE_ACCOUNT_CONFIG)
     .compile();

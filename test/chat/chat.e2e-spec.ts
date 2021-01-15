@@ -8,7 +8,7 @@ import {
 import { PublicChat, PublicChatMessage } from './interfaces/chat';
 import { equalSet, isValidUUID } from '../../src/util/helper';
 import { ProviderToken } from '../../src/provider';
-import { ChatStorageMock } from '../../src/chat/__mocks__/chat.storage';
+import { InMemoryChatStorage } from '../../src/chat/storage/memory/memory-chat.storage';
 import { ServiceTokenGuard } from '../../src/app/auth/strategy/service-token/service-token.guard';
 import { AuthGuardMock } from '../../src/app/auth/__mocks__/auth.guard';
 import {
@@ -36,7 +36,7 @@ describe('ChatController (e2e) [authenticated]', () => {
       imports: [RootModule],
     })
       .overrideProvider(ProviderToken.CHAT_STORAGE)
-      .useClass(ChatStorageMock)
+      .useClass(InMemoryChatStorage)
       .overrideGuard(ServiceTokenGuard)
       .useValue(new AuthGuardMock(user))
       .compile();
