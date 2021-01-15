@@ -3,11 +3,18 @@ import {
   ChatStorageProvider,
   ChatModel,
   ChatMessageModel,
-  ChatFilter,
-  ChatMessageFilter,
+  ChatUUID,
+  ChatMessageUUID,
+  ChatPrototype,
+  ChatMessagePrototype,
+  UserUUID,
 } from '../interfaces/storage';
 import { v4 as uuidv4 } from 'uuid';
+import { equalSet } from '../../util/helper';
 // import { CHATS, CHAT_MESSAGES } from './data';
+
+type ChatFilter = (chat: ChatModel) => boolean;
+type ChatMessageFilter = (message: ChatMessageModel) => boolean;
 
 @Injectable()
 export class ChatStorageMock implements ChatStorageProvider {
@@ -16,7 +23,37 @@ export class ChatStorageMock implements ChatStorageProvider {
   private messages: ChatMessageModel[] = []; // = CHAT_MESSAGES;
 
   // MARK: - Public Methods
-  // MARK: Chat Storage Provider
+  // MARK: Chat
+  async getChat(uuid: ChatUUID): Promise<ChatModel | undefined> {
+    return this.findChat((chat) => chat.uuid === uuid);
+  }
+
+  async createChat(payload: ChatPrototype): Promise<ChatModel> {
+    const uuid = uuidv4();
+    const chat: ChatModel = { ...payload, uuid };
+
+    this.chats.push(chat);
+
+    return chat;
+  }
+
+  async findChatsByParticipants(
+    participants: Set<UserUUID>,
+    strictEqual: boolean,
+  ): Promise<ChatModel[]> {
+    if (strictEqual) {
+      return this.findChats((chat) => {
+        return equalSet(new Set(chat.participants), participants);
+      });
+    } else {
+      return this.findChats((chat) =>
+        Array.from(participants).every((participant) =>
+          chat.participants.includes(participant),
+        ),
+      );
+    }
+  }
+
   async findChat(filter: ChatFilter): Promise<ChatModel | undefined> {
     const chats = await this.findChats(filter);
 
@@ -27,13 +64,26 @@ export class ChatStorageMock implements ChatStorageProvider {
     return this.chats.filter(filter);
   }
 
-  async createChat(payload: Omit<ChatModel, 'uuid'>): Promise<ChatModel> {
+  // MARK: Message
+  async getMessage(
+    uuid: ChatMessageUUID,
+  ): Promise<ChatMessageModel | undefined> {
+    return this.findMessage((message) => message.uuid === uuid);
+  }
+
+  async createMessage(
+    payload: ChatMessagePrototype,
+  ): Promise<ChatMessageModel> {
     const uuid = uuidv4();
-    const chat: ChatModel = { ...payload, uuid };
+    const message: ChatMessageModel = { ...payload, uuid };
 
-    this.chats.push(chat);
+    this.messages.push(message);
 
-    return chat;
+    return message;
+  }
+
+  async findMessagesByChat(chat: ChatUUID): Promise<ChatMessageModel[]> {
+    return this.findMessages((message) => message.chat === chat);
   }
 
   async findMessage(
@@ -46,17 +96,6 @@ export class ChatStorageMock implements ChatStorageProvider {
 
   async findMessages(filter: ChatMessageFilter): Promise<ChatMessageModel[]> {
     return this.messages.filter(filter);
-  }
-
-  async createMessage(
-    payload: Omit<ChatMessageModel, 'uuid'>,
-  ): Promise<ChatMessageModel> {
-    const uuid = uuidv4();
-    const message: ChatMessageModel = { ...payload, uuid };
-
-    this.messages.push(message);
-
-    return message;
   }
 
   // MARK: - Private Methods

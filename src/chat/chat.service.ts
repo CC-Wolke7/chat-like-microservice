@@ -8,7 +8,6 @@ import { assert } from 'console';
 import { RecommenderBot } from '../app/auth/interfaces/service-account';
 import { AuthenticatedUser } from '../app/auth/interfaces/user';
 import { ProviderToken } from '../provider';
-import { equalSet } from '../util/helper';
 import { ChatException } from './chat.exception';
 import {
   ChatStorageProvider,
@@ -32,22 +31,17 @@ export class ChatService {
 
   // MARK: - Public Methods
   async getChat(uuid: ChatUUID): Promise<ChatModel | undefined> {
-    return this.storage.findChat((chat) => chat.uuid === uuid);
+    return this.storage.getChat(uuid);
   }
 
   async getChats(
     user: UserUUID,
     participants?: Set<UserUUID>,
   ): Promise<ChatModel[]> {
-    return this.storage.findChats(
-      (chat) =>
-        chat.participants.includes(user) &&
-        (participants !== undefined
-          ? Array.from(participants).every((participant) =>
-              chat.participants.includes(participant),
-            )
-          : true),
-    );
+    const allParticipants =
+      participants !== undefined ? participants.add(user) : new Set([user]);
+
+    return this.storage.findChatsByParticipants(allParticipants, false);
   }
 
   async createChat(
@@ -56,9 +50,10 @@ export class ChatService {
   ): Promise<ChatModel> {
     const allParticipants = participants.add(creator.uuid);
 
-    const existingChats = await this.storage.findChats((chat) => {
-      return equalSet(new Set(chat.participants), allParticipants);
-    });
+    const existingChats = await this.storage.findChatsByParticipants(
+      allParticipants,
+      true,
+    );
 
     assert(existingChats.length <= 1);
 
@@ -75,7 +70,7 @@ export class ChatService {
   }
 
   async getMessages(chat: ChatUUID): Promise<ChatMessageModel[]> {
-    return this.storage.findMessages((message) => message.chat === chat);
+    return this.storage.findMessagesByChat(chat);
   }
 
   async createMessage(

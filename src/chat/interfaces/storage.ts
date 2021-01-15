@@ -18,17 +18,18 @@ export interface ChatMessageModel {
 }
 
 // MARK: - Provider
-export type ChatFilter = (chat: ChatModel) => boolean;
-export type ChatMessageFilter = (message: ChatMessageModel) => boolean;
+export type ChatPrototype = Omit<ChatModel, 'uuid'>;
+export type ChatMessagePrototype = Omit<ChatMessageModel, 'uuid'>;
 
 export interface ChatStorageProvider {
-  findChat(filter: ChatFilter): Promise<ChatModel | undefined>;
-  findChats(filter: ChatFilter): Promise<ChatModel[]>;
-  createChat(chat: Omit<ChatModel, 'uuid'>): Promise<ChatModel>;
+  getChat(uuid: ChatUUID): Promise<ChatModel | undefined>;
+  createChat(chat: ChatPrototype): Promise<ChatModel>;
+  findChatsByParticipants(
+    participants: Set<UserUUID>,
+    strictEqual: boolean,
+  ): Promise<ChatModel[]>;
 
-  findMessage(filter: ChatMessageFilter): Promise<ChatMessageModel | undefined>;
-  findMessages(filter: ChatMessageFilter): Promise<ChatMessageModel[]>;
-  createMessage(
-    message: Omit<ChatMessageModel, 'uuid'>,
-  ): Promise<ChatMessageModel>;
+  getMessage(uuid: ChatMessageUUID): Promise<ChatMessageModel | undefined>;
+  createMessage(message: ChatMessagePrototype): Promise<ChatMessageModel>;
+  findMessagesByChat(chat: ChatUUID): Promise<ChatMessageModel[]>;
 }

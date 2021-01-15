@@ -10,6 +10,11 @@ $ npm install
 
 ## Running the app
 
+To emulate Google Firestore, run:
+
+1. `gcloud beta emulators firestore start --host-port localhost:8080`
+2. `export FIRESTORE_EMULATOR_HOST=localhost:8080`.
+
 ```bash
 # development
 $ npm run start

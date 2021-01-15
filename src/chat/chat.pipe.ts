@@ -23,10 +23,10 @@ export class ChatByUUIDPipe implements PipeTransform {
 
   // MAKR: - Public Methods
   async transform(
-    value: string,
+    uuid: string,
     metadata: ArgumentMetadata,
   ): Promise<ChatModel> {
-    const chat = await this.chatStorage.findChat((chat) => chat.uuid === value);
+    const chat = await this.chatStorage.getChat(uuid);
 
     if (!chat) {
       throw new NotFoundException(ChatException.ChatNotFound);

@@ -3,12 +3,12 @@ import { ProviderToken } from '../provider';
 import { ChatController } from './chat.controller';
 import { ChatGateway } from './gateway/chat.gateway';
 import { ChatService } from './chat.service';
-import { ChatStorage } from './chat.storage';
+import { FirestoreChatStorage } from './chat.storage';
 import { AuthModule } from '../app/auth/auth.module';
 
 const ChatStorageProvider: Provider = {
   provide: ProviderToken.CHAT_STORAGE,
-  useClass: ChatStorage,
+  useClass: FirestoreChatStorage,
 };
 
 const ChatNotificationProvider: Provider = {
