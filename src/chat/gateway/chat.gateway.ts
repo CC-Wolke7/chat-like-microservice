@@ -27,7 +27,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 import * as http from 'http';
 import { AuthenticatedWsGateway } from '../../util/AuthenticatedWsGateway';
 import { ServiceTokenStrategy } from '../../app/auth/strategy/service-token/service-token.strategy';
-import { UseFilters } from '@nestjs/common';
+import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ChatGatewayExceptionFilter } from './chat.gateway.filter';
 
 type User = ServiceAccountUser;
@@ -38,6 +38,15 @@ type AuthenticatedWebSocket = WebSocket & {
 
 // @TODO: abstract chat rooms - https://github.com/afertil/nest-chat-api
 // @TODO: detect broken/closed connections via ping/pong - https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
+
+// @NOTE: should match provider in root.module.ts
+@UsePipes(
+  new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+  }),
+)
 @UseFilters(new ChatGatewayExceptionFilter())
 @WebSocketGateway()
 export class ChatGateway

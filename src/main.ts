@@ -10,8 +10,6 @@ async function bootstrap(): Promise<void> {
   //
   // @TODO: configure CSRF (origin whitelist) - https://docs.nestjs.com/security/csrf
   // @TODO: configure CORS (trusted origins) (- https://docs.nestjs.com/security/cors
-
-  // @TODO: add serialization interceptor - https://docs.nestjs.com/techniques/serialization
   const app = await NestFactory.create(RootModule);
   app.useWebSocketAdapter(new WsAdapter(app));
 

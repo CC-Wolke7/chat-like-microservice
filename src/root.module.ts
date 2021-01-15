@@ -10,6 +10,8 @@ import { AppModule } from './app/app.module';
 import { ChatModule } from './chat/chat.module';
 import { LoggerMiddleware } from './app/middleware/logger.middleware';
 
+// @TODO: add serialization interceptor - https://docs.nestjs.com/techniques/serialization
+
 const ValidationPipeProvider: Provider = {
   provide: APP_PIPE,
   useValue: new ValidationPipe({

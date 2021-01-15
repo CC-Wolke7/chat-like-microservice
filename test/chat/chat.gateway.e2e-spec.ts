@@ -54,6 +54,117 @@ describe('ChatGateway (e2e) [authenticated]', () => {
     });
   });
 
+  it('`CREATE_MESSAGE` should fail if `chat` is not a UUID', async () => {
+    const { server } = environment;
+
+    const createMessageEvent: WsResponse<CreateMessageEventPayload> = {
+      event: ChatEvent.CreateMessage,
+    } as WsResponse<CreateMessageEventPayload>;
+
+    const socket = connectToWebsocket(server, {
+      headers: {
+        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
+      },
+    });
+
+    sockets.push(socket);
+
+    await new Promise<void>((resolve) => {
+      socket.onopen = () => {
+        socket.onmessage = (event) => {
+          const chatEvent = JSON.parse(
+            event.data as any,
+          ) as WsResponse<ChatException>;
+
+          expect(chatEvent.event).toEqual(ChatEvent.ChatError);
+          expect(chatEvent.data).toEqual('Bad Request Exception');
+
+          resolve();
+        };
+
+        socket.send(JSON.stringify(createMessageEvent));
+      };
+    });
+  });
+
+  it('`CREATE_MESSAGE` should fail if `chat` is not a UUID', async () => {
+    const { server } = environment;
+
+    const createMessageEventPayload: CreateMessageEventPayload = {
+      chat: 'chat-1',
+      message: 'hello',
+    };
+
+    const createMessageEvent: WsResponse<CreateMessageEventPayload> = {
+      event: ChatEvent.CreateMessage,
+      data: createMessageEventPayload,
+    };
+
+    const socket = connectToWebsocket(server, {
+      headers: {
+        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
+      },
+    });
+
+    sockets.push(socket);
+
+    await new Promise<void>((resolve) => {
+      socket.onopen = () => {
+        socket.onmessage = (event) => {
+          const chatEvent = JSON.parse(
+            event.data as any,
+          ) as WsResponse<ChatException>;
+
+          expect(chatEvent.event).toEqual(ChatEvent.ChatError);
+          expect(chatEvent.data).toEqual('Bad Request Exception');
+
+          resolve();
+        };
+
+        socket.send(JSON.stringify(createMessageEvent));
+      };
+    });
+  });
+
+  it('`CREATE_MESSAGE` should fail if `message` is not a string', async () => {
+    const { server } = environment;
+
+    const createMessageEventPayload: CreateMessageEventPayload = {
+      chat: 'a35fe77b-7d4f-4da2-8d5d-271cf9d82fee',
+      message: 12 as any,
+    };
+
+    const createMessageEvent: WsResponse<CreateMessageEventPayload> = {
+      event: ChatEvent.CreateMessage,
+      data: createMessageEventPayload,
+    };
+
+    const socket = connectToWebsocket(server, {
+      headers: {
+        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
+      },
+    });
+
+    sockets.push(socket);
+
+    await new Promise<void>((resolve) => {
+      socket.onopen = () => {
+        socket.onmessage = (event) => {
+          const chatEvent = JSON.parse(
+            event.data as any,
+          ) as WsResponse<ChatException>;
+
+          expect(chatEvent.event).toEqual(ChatEvent.ChatError);
+          expect(chatEvent.data).toEqual('Bad Request Exception');
+
+          resolve();
+        };
+
+        socket.send(JSON.stringify(createMessageEvent));
+      };
+    });
+  });
+
   it('`CREATE_MESSAGE` should fail if chat does not exist', async () => {
     const { server } = environment;
 
