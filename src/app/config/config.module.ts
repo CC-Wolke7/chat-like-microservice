@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import { ChatConfig } from './chat.config';
+import { CoreConfig } from './core.config';
 import { validate } from './environment';
-import serviceAccountConfig from './service-account.config';
+import { ServiceAccountConfig } from './service-account.config';
 
 // https://github.com/nestjs/config/issues/82
 // https://github.com/nestjs/config/issues/287#issuecomment-676340140
@@ -9,12 +11,13 @@ import serviceAccountConfig from './service-account.config';
   imports: [
     NestConfigModule.forRoot({
       envFilePath: [
-        '.env.development.production',
+        '.env.test',
         '.env.development.local',
         '.env.development',
+        '.env.production',
         '.env',
       ],
-      load: [serviceAccountConfig],
+      load: [CoreConfig, ServiceAccountConfig, ChatConfig],
       cache: true,
       validate,
     }),

@@ -5,8 +5,9 @@ import * as WebSocket from 'ws';
 import { InMemoryChatStorage } from '../../src/chat/storage/memory/memory-chat.storage';
 import { ProviderToken } from '../../src/provider';
 import { RootModule } from '../../src/root.module';
-import serviceAccountConfig, {
+import {
   ServiceAccountConfig,
+  ServiceAccountConfigProvider,
 } from '../../src/app/config/service-account.config';
 import { ServiceAccountName } from '../../src/app/auth/interfaces/service-account';
 
@@ -18,7 +19,7 @@ export const PARTICIPANT_SERVICE_TOKEN =
 export const NON_PARTICIPANT_SERVICE_TOKEN =
   'M2EzNzE0M2JkNzFhZTc3M2FhODIwMjc4NDU3MTgzMjgK';
 
-export const TEST_SERVICE_ACCOUNT_CONFIG: ServiceAccountConfig = {
+export const TEST_SERVICE_ACCOUNT_CONFIG: ServiceAccountConfigProvider = {
   tokenWhitelist: [
     CREATOR_SERVICE_TOKEN,
     PARTICIPANT_SERVICE_TOKEN,
@@ -97,7 +98,7 @@ export async function setupChatWebsocketTest(
   })
     .overrideProvider(ProviderToken.CHAT_STORAGE)
     .useClass(InMemoryChatStorage)
-    .overrideProvider(serviceAccountConfig.KEY)
+    .overrideProvider(ServiceAccountConfig.KEY)
     .useValue(TEST_SERVICE_ACCOUNT_CONFIG)
     .compile();
 

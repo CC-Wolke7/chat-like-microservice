@@ -9,8 +9,9 @@ import {
 import { AuthStrategyName } from '../../strategy';
 import { UserType } from '../../interfaces/user';
 import { ServiceAccount } from '../../interfaces/service-account';
-import serviceAccountConfig, {
+import {
   ServiceAccountConfig,
+  ServiceAccountConfigProvider,
 } from '../../../config/service-account.config';
 
 @Injectable()
@@ -19,10 +20,12 @@ export class ServiceTokenStrategy extends PassportStrategy(
   AuthStrategyName.ServiceToken,
 ) {
   // MARK: - Private Properties
-  private readonly config: ServiceAccountConfig;
+  private readonly config: ServiceAccountConfigProvider;
 
   // MARK: - Initialization
-  constructor(@Inject(serviceAccountConfig.KEY) config: ServiceAccountConfig) {
+  constructor(
+    @Inject(ServiceAccountConfig.KEY) config: ServiceAccountConfigProvider,
+  ) {
     super({ session: false });
     this.config = config;
   }

@@ -5,6 +5,7 @@ import { ChatGateway } from './gateway/chat.gateway';
 import { ChatService } from './chat.service';
 import { FirestoreChatStorage } from './storage/firestore/firestore-chat.storage';
 import { AuthModule } from '../app/auth/auth.module';
+import { ConfigModule } from '../app/config/config.module';
 
 const ChatStorageProvider: Provider = {
   provide: ProviderToken.CHAT_STORAGE,
@@ -17,7 +18,7 @@ const ChatNotificationProvider: Provider = {
 };
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, ConfigModule],
   controllers: [ChatController],
   providers: [
     ChatService,

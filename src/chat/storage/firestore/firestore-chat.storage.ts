@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   ChatStorageProvider,
   ChatModel,
@@ -12,6 +12,14 @@ import {
 import { Firestore } from '@google-cloud/firestore';
 import * as crypto from 'crypto';
 import { ChatConverter, MessageConverter } from './converter';
+import {
+  ChatConfig,
+  ChatConfigProvider,
+} from '../../../app/config/chat.config';
+import {
+  CoreConfig,
+  CoreConfigProvider,
+} from '../../../app/config/core.config';
 
 export type FirestoreChatModel = Omit<ChatModel, 'uuid'> & {
   participantsHash: string;
@@ -27,15 +35,30 @@ enum FirestoreCollectionPath {
 @Injectable()
 export class FirestoreChatStorage implements ChatStorageProvider {
   // MARK: - Private Properties
-  private readonly firestore = new Firestore();
+  private readonly firestore: Firestore;
 
-  private readonly chats = this.firestore
-    .collection(FirestoreCollectionPath.Chats)
-    .withConverter(ChatConverter);
+  private readonly chats: FirebaseFirestore.CollectionReference<FirestoreChatModel>;
+  private readonly messages: FirebaseFirestore.CollectionReference<FirestoreChatMessageModel>;
 
-  private readonly messages = this.firestore
-    .collection(FirestoreCollectionPath.Messages)
-    .withConverter(MessageConverter);
+  // MARK: - Initialization
+  constructor(
+    @Inject(CoreConfig.KEY) config: CoreConfigProvider,
+    @Inject(ChatConfig.KEY) { database }: ChatConfigProvider,
+  ) {
+    this.firestore = new Firestore({
+      projectId: config.gcp.projectId,
+      host: database.host,
+      port: database.port,
+    });
+
+    this.chats = this.firestore
+      .collection(FirestoreCollectionPath.Chats)
+      .withConverter(ChatConverter);
+
+    this.messages = this.firestore
+      .collection(FirestoreCollectionPath.Messages)
+      .withConverter(MessageConverter);
+  }
 
   // MARK: - Public Methods
   async reset(): Promise<void> {

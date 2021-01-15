@@ -1,0 +1,24 @@
+version: '3.4'
+
+services:
+  api:
+    image: chat-microservice
+    build:
+      context: .
+    environment:
+      FIRESTORE_EMULATOR_HOST: db:8080
+      GCP_PROJECT_ID: chat-microservice
+    volumes:
+      - ./src:/app/src
+      - ./test:/app/test
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    command: yarn start:dev
+  db:
+    image: google/cloud-sdk:emulators
+    ports:
+      - 8080:8080
+    # https://github.com/googleapis/nodejs-firestore/issues/1296#issuecomment-697948320
+    entrypoint: /bin/bash -c "gcloud config set project chat-microservice && /google-cloud-sdk/platform/cloud-firestore-emulator/cloud_firestore_emulator start --host=0.0.0.0 --port=8080"

@@ -8,14 +8,14 @@ import { ConfigNamespace } from './namespace';
 
 type Token = string;
 
-export interface ServiceAccountConfig {
+export interface ServiceAccountConfigProvider {
   tokenWhitelist: string[];
   accountForToken: Record<Token, Omit<ServiceAccount, 'type'>>;
 }
 
-export default registerAs(
+export const ServiceAccountConfig = registerAs(
   ConfigNamespace.ServiceAccount,
-  (): ServiceAccountConfig => {
+  (): ServiceAccountConfigProvider => {
     const environment = (process.env as unknown) as Environment;
 
     return {
