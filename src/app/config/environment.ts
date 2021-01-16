@@ -27,6 +27,18 @@ export class Environment {
   @IsOptional()
   @IsNumber()
   readonly CHAT_DATABASE_PORT: number;
+
+  // Like Config
+  @IsOptional()
+  @IsString()
+  readonly LIKE_DATABASE_HOST: string;
+
+  @IsOptional()
+  @IsNumber()
+  readonly LIKE_DATABASE_PORT: number;
+
+  @IsString()
+  readonly LIKE_BIGTABLE_INSTANCE_ID: string;
 }
 
 export function validate(config: Record<string, unknown>): Environment {

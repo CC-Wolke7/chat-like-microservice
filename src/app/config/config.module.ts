@@ -3,6 +3,7 @@ import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { ChatConfig } from './chat.config';
 import { CoreConfig } from './core.config';
 import { validate } from './environment';
+import { LikeConfig } from './like.config';
 import { ServiceAccountConfig } from './service-account.config';
 
 // https://github.com/nestjs/config/issues/82
@@ -17,7 +18,7 @@ import { ServiceAccountConfig } from './service-account.config';
         '.env.production',
         '.env',
       ],
-      load: [CoreConfig, ServiceAccountConfig, ChatConfig],
+      load: [CoreConfig, ServiceAccountConfig, ChatConfig, LikeConfig],
       cache: true,
       validate,
     }),

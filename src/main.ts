@@ -18,6 +18,7 @@ async function bootstrap(): Promise<void> {
     .setVersion('1.0')
     .addTag('app')
     .addTag('chat')
+    .addTag('like')
     .build();
 
   SwaggerModule.setup(

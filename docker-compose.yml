@@ -6,19 +6,27 @@ services:
     build:
       context: .
     environment:
-      FIRESTORE_EMULATOR_HOST: db:8080
-      GCP_PROJECT_ID: chat-microservice
+      FIRESTORE_EMULATOR_HOST: firestore:8970
+      BIGTABLE_EMULATOR_HOST: bigtable:8086
+      GCP_PROJECT_ID: chat-microservice # must match value passed to emulators
     volumes:
       - ./src:/app/src
       - ./test:/app/test
     ports:
       - 3000:3000
     depends_on:
-      - db
+      - firestore
     command: yarn start:dev
-  db:
+
+  # https://github.com/googleapis/nodejs-firestore/issues/1296#issuecomment-697948320
+  firestore:
     image: google/cloud-sdk:emulators
     ports:
-      - 8080:8080
-    # https://github.com/googleapis/nodejs-firestore/issues/1296#issuecomment-697948320
-    entrypoint: /bin/bash -c "gcloud config set project chat-microservice && /google-cloud-sdk/platform/cloud-firestore-emulator/cloud_firestore_emulator start --host=0.0.0.0 --port=8080"
+      - 8970:8970
+    entrypoint: /bin/bash -c "gcloud config set project chat-microservice && /google-cloud-sdk/platform/cloud-firestore-emulator/cloud_firestore_emulator start --host=0.0.0.0 --port=8970"
+
+  bigtable:
+    image: google/cloud-sdk:emulators
+    ports:
+      - 8086:8086
+    entrypoint: /bin/bash -c "gcloud config set project chat-microservice && /google-cloud-sdk/platform/bigtable-emulator/cbtemulator --host=0.0.0.0 --port=8086"

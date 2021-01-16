@@ -11,7 +11,7 @@ import {
 } from '../../interfaces/storage';
 import { Firestore } from '@google-cloud/firestore';
 import * as crypto from 'crypto';
-import { ChatConverter, MessageConverter } from './converter';
+import { ChatConverter, MessageConverter } from './firestore-chat-converter';
 import {
   ChatConfig,
   ChatConfigProvider,
@@ -47,8 +47,8 @@ export class FirestoreChatStorage implements ChatStorageProvider {
   ) {
     this.firestore = new Firestore({
       projectId: config.gcp.projectId,
-      host: database.host,
-      port: database.port,
+      host: database?.host,
+      port: database?.port,
     });
 
     this.chats = this.firestore
