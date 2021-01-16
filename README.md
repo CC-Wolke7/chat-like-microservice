@@ -1,4 +1,4 @@
-# Chat-Microservice
+# Chat & Like Microservices
 
 This package provides a REST and WebSocket API to chat. The OpenAPI specification is available at `http://localhost:3000/docs/`.
 

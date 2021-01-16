@@ -9,6 +9,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ChatModule } from './chat/chat.module';
 import { LoggerMiddleware } from './app/middleware/logger.middleware';
+import { LikeModule } from './like/like.module';
 
 // @TODO: add serialization interceptor - https://docs.nestjs.com/techniques/serialization
 
@@ -22,7 +23,7 @@ const ValidationPipeProvider: Provider = {
 };
 
 @Module({
-  imports: [AppModule, ChatModule],
+  imports: [AppModule, ChatModule, LikeModule],
   providers: [ValidationPipeProvider],
 })
 export class RootModule implements NestModule {
