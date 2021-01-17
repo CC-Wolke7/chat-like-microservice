@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { WsAdapter } from '@nestjs/platform-ws';
+import { CoreConfig } from './app/config/core.config';
+import { setupDocs } from './docs';
 import { RootModule } from './root.module';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap(): Promise<void> {
   // @TODO: support horizontal WS scaling
@@ -10,22 +11,18 @@ async function bootstrap(): Promise<void> {
   //
   // @TODO: configure CSRF (origin whitelist) - https://docs.nestjs.com/security/csrf
   // @TODO: configure CORS (trusted origins) (- https://docs.nestjs.com/security/cors
-  const app = await NestFactory.create(RootModule);
+
+  const { plugins } = CoreConfig();
+
+  const app = await NestFactory.create(
+    RootModule.register({
+      plugins,
+    }),
+  );
+
   app.useWebSocketAdapter(new WsAdapter(app));
 
-  const specOptions = new DocumentBuilder()
-    .setTitle('Chat Microservice')
-    .setVersion('1.0')
-    .addTag('app')
-    .addTag('chat')
-    .addTag('like')
-    .build();
-
-  SwaggerModule.setup(
-    'docs',
-    app,
-    SwaggerModule.createDocument(app, specOptions),
-  );
+  setupDocs(app, plugins);
 
   await app.listen(3000);
 }

@@ -1,8 +1,10 @@
 import { Environment } from './environment';
 import { registerAs } from '@nestjs/config';
 import { ConfigNamespace } from './namespace';
+import { Plugin } from '../../plugins';
 
 export interface CoreConfigProvider {
+  plugins: Set<Plugin>;
   gcp: {
     projectId: string;
   };
@@ -12,10 +14,12 @@ export const CoreConfig = registerAs(
   ConfigNamespace.Core,
   (): CoreConfigProvider => {
     const environment = (process.env as unknown) as Environment;
+    const { PLUGINS, GCP_PROJECT_ID } = environment;
 
     return {
+      plugins: new Set(PLUGINS ? (PLUGINS.split(',') as Plugin[]) : []),
       gcp: {
-        projectId: environment.GCP_PROJECT_ID,
+        projectId: GCP_PROJECT_ID,
       },
     };
   },

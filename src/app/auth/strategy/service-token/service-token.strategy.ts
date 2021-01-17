@@ -13,6 +13,7 @@ import {
   ServiceAccountConfig,
   ServiceAccountConfigProvider,
 } from '../../../config/service-account.config';
+import { AppException } from '../../../app.exception';
 
 @Injectable()
 export class ServiceTokenStrategy extends PassportStrategy(
@@ -39,7 +40,9 @@ export class ServiceTokenStrategy extends PassportStrategy(
     const details = this.config.accountForToken[token];
 
     if (!details) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(
+        AppException.NoDetailsForServiceToken,
+      );
     }
 
     return {
