@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { use } from 'passport';
 import { UserUUID } from '../../../chat/interfaces/storage';
 import {
   AggregateLike,

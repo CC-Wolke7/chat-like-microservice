@@ -19,6 +19,7 @@ import { UserType } from '../../src/app/auth/interfaces/user';
 import * as qs from 'qs';
 import { isValidISODateString } from 'iso-datestring-validator';
 import { RootModule } from '../../src/root.module';
+import { Plugin } from '../../src/plugins';
 
 describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -33,7 +34,7 @@ describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Hooks
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule],
+      imports: [RootModule.register({ plugins: new Set([Plugin.ChatApi]) })],
     })
       .overrideProvider(ProviderToken.CHAT_STORAGE)
       .useClass(InMemoryChatStorage)

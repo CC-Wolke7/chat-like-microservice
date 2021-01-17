@@ -15,11 +15,11 @@ import { ChatConverter, MessageConverter } from './firestore-chat-converter';
 import {
   ChatConfig,
   ChatConfigProvider,
-} from '../../../app/config/chat.config';
+} from '../../../app/config/namespace/chat.config';
 import {
   CoreConfig,
   CoreConfigProvider,
-} from '../../../app/config/core.config';
+} from '../../../app/config/namespace/core.config';
 
 export type FirestoreChatModel = Omit<ChatModel, 'uuid'> & {
   participantsHash: string;
@@ -43,12 +43,12 @@ export class FirestoreChatStorage implements ChatStorageProvider {
   // MARK: - Initialization
   constructor(
     @Inject(CoreConfig.KEY) config: CoreConfigProvider,
-    @Inject(ChatConfig.KEY) { database }: ChatConfigProvider,
+    @Inject(ChatConfig.KEY) { firestore }: ChatConfigProvider,
   ) {
     this.firestore = new Firestore({
       projectId: config.gcp.projectId,
-      host: database?.host,
-      port: database?.port,
+      host: firestore?.host,
+      port: firestore?.port,
     });
 
     this.chats = this.firestore

@@ -1,10 +1,10 @@
 import {
   ServiceAccount,
   ServiceAccountName,
-} from '../auth/interfaces/service-account';
-import { Environment } from './environment';
+} from '../../auth/interfaces/service-account';
+import { Environment } from '../environment';
 import { registerAs } from '@nestjs/config';
-import { ConfigNamespace } from './namespace';
+import { ConfigNamespace } from '../namespace';
 
 type Token = string;
 
@@ -17,13 +17,14 @@ export const ServiceAccountConfig = registerAs(
   ConfigNamespace.ServiceAccount,
   (): ServiceAccountConfigProvider => {
     const environment = (process.env as unknown) as Environment;
+    const { RECOMMENDER_BOT_TOKEN, RECOMMENDER_BOT_USER_UUID } = environment;
 
     return {
-      tokenWhitelist: [environment.RECOMMENDER_BOT_TOKEN],
+      tokenWhitelist: [RECOMMENDER_BOT_TOKEN],
       accountForToken: {
-        [environment.RECOMMENDER_BOT_TOKEN]: {
+        [RECOMMENDER_BOT_TOKEN]: {
           name: ServiceAccountName.RecommenderBot,
-          uuid: environment.RECOMMENDER_BOT_USER_UUID,
+          uuid: RECOMMENDER_BOT_USER_UUID,
         },
       },
     };
