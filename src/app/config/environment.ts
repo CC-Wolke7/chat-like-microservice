@@ -9,6 +9,8 @@ import {
   IsUUID,
   validateSync,
 } from 'class-validator';
+import { ChatStorageProviderType } from '../../chat/chat.module';
+import { LikeStorageProviderType } from '../../like/like.module';
 import { Plugin } from '../../plugins';
 
 export class Environment {
@@ -32,24 +34,33 @@ export class Environment {
 
   // Chat Config
   @IsOptional()
+  @IsEnum(ChatStorageProviderType)
+  readonly CHAT_STORAGE?: ChatStorageProviderType;
+
+  @IsOptional()
   @IsString()
-  readonly CHAT_DATABASE_HOST?: string;
+  readonly CHAT_FIRESTORE_HOST?: string;
 
   @IsOptional()
   @IsNumber()
-  readonly CHAT_DATABASE_PORT?: number;
+  readonly CHAT_FIRESTORE_PORT?: number;
 
   // Like Config
   @IsOptional()
+  @IsEnum(LikeStorageProviderType)
+  readonly LIKE_STORAGE?: LikeStorageProviderType;
+
+  @IsOptional()
   @IsString()
-  readonly LIKE_DATABASE_HOST?: string;
+  readonly LIKE_BIGTABLE_INSTANCE_ID?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly LIKE_BIGTABLE_HOST?: string;
 
   @IsOptional()
   @IsNumber()
-  readonly LIKE_DATABASE_PORT?: number;
-
-  @IsString()
-  readonly LIKE_BIGTABLE_INSTANCE_ID: string;
+  readonly LIKE_BIGTABLE_PORT?: number;
 }
 
 export function validate(config: Record<string, unknown>): Environment {

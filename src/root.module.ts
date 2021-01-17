@@ -1,6 +1,5 @@
 import {
   DynamicModule,
-  InternalServerErrorException,
   MiddlewareConsumer,
   NestModule,
   Provider,
@@ -10,36 +9,33 @@ import {
 import { APP_PIPE } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { LoggerMiddleware } from './app/middleware/logger.middleware';
-import { AppException } from './app/app.exception';
-import { Plugin } from './plugins';
-import { ChatModule } from './chat/chat.module';
-import { LikeModule } from './like/like.module';
+import { Plugin, PluginFactory, PluginFactoryOptions } from './plugins';
+import { LikeModuleFactory } from './like/like.module';
+import { ChatModuleFactory } from './chat/chat.module';
 
-const MODULE_FOR_PLUGIN: Map<Plugin, Type<any>> = new Map([
-  [Plugin.ChatApi, ChatModule],
-  [Plugin.LikeApi, LikeModule],
-]);
+const FACTORY_FOR_PLUGIN: Record<Plugin, Type<PluginFactory>> = {
+  [Plugin.ChatApi]: ChatModuleFactory,
+  [Plugin.LikeApi]: LikeModuleFactory,
+};
 
 interface RootModuleOptions {
   plugins: Set<Plugin>;
+  optionsForPlugin?: Record<Plugin, PluginFactoryOptions | undefined>;
 }
 
 export class RootModule implements NestModule {
   // MARK: - Public Static Methods
   public static register(options: RootModuleOptions): DynamicModule {
-    const { plugins } = options;
+    const { plugins, optionsForPlugin } = options;
 
     const modules = Array.from(plugins).map((plugin) => {
-      const module = MODULE_FOR_PLUGIN.get(plugin);
+      const Factory = FACTORY_FOR_PLUGIN[plugin];
+      const options = optionsForPlugin ? optionsForPlugin[plugin] : undefined;
 
-      if (!module) {
-        throw new InternalServerErrorException(AppException.NoModuleForPlugin);
-      }
-
-      return module;
+      return new Factory().create(options);
     });
 
-    const ValidationPipeProvider: Provider = {
+    const validationPipe: Provider = {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
         transform: true,
@@ -53,7 +49,7 @@ export class RootModule implements NestModule {
     return {
       module: RootModule,
       imports: [AppModule, ...modules],
-      providers: [ValidationPipeProvider],
+      providers: [validationPipe],
     };
   }
 
