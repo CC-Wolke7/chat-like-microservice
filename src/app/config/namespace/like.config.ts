@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
-import { Environment } from './environment';
-import { ConfigNamespace } from './namespace';
+import { Environment } from '../environment';
+import { ConfigNamespace } from '../namespace';
 
 export interface LikeConfigProvider {
   database?: {

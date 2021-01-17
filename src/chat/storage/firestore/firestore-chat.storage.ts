@@ -15,11 +15,11 @@ import { ChatConverter, MessageConverter } from './firestore-chat-converter';
 import {
   ChatConfig,
   ChatConfigProvider,
-} from '../../../app/config/chat.config';
+} from '../../../app/config/namespace/chat.config';
 import {
   CoreConfig,
   CoreConfigProvider,
-} from '../../../app/config/core.config';
+} from '../../../app/config/namespace/core.config';
 
 export type FirestoreChatModel = Omit<ChatModel, 'uuid'> & {
   participantsHash: string;

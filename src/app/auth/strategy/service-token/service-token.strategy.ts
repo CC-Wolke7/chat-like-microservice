@@ -12,7 +12,7 @@ import { ServiceAccount } from '../../interfaces/service-account';
 import {
   ServiceAccountConfig,
   ServiceAccountConfigProvider,
-} from '../../../config/service-account.config';
+} from '../../../config/namespace/service-account.config';
 import { AppException } from '../../../app.exception';
 
 @Injectable()

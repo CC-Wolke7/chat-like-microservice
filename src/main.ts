@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { CoreConfig } from './app/config/core.config';
+import { CoreConfig } from './app/config/namespace/core.config';
 import { setupDocs } from './docs';
 import { RootModule } from './root.module';
 

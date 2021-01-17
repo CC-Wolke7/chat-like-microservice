@@ -1,6 +1,6 @@
-import { Environment } from './environment';
+import { Environment } from '../environment';
 import { registerAs } from '@nestjs/config';
-import { ConfigNamespace } from './namespace';
+import { ConfigNamespace } from '../namespace';
 
 export interface ChatConfigProvider {
   database?: {

@@ -13,13 +13,14 @@ import { RootModule } from '../../src/root.module';
 import { InMemoryLikeStorage } from '../../src/like/storage/memory/memory-like.storage';
 import { PublicOfferLikes } from './interfaces/like';
 import { Vote } from '../../src/like/interfaces/storage';
-import { ServiceAccountConfig } from '../../src/app/config/service-account.config';
+import { ServiceAccountConfig } from '../../src/app/config/namespace/service-account.config';
 import {
   CREATOR_SERVICE_TOKEN,
   NON_PARTICIPANT_SERVICE_TOKEN,
   PARTICIPANT_SERVICE_TOKEN,
   TEST_SERVICE_ACCOUNT_CONFIG,
 } from '../util/helper';
+import { Plugin } from '../../src/plugins';
 
 describe('LikeController (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -34,7 +35,7 @@ describe('LikeController (e2e) [authenticated]', () => {
   // MARK: - Hooks
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule],
+      imports: [RootModule.register({ plugins: new Set([Plugin.LikeApi]) })],
     })
       .overrideProvider(ProviderToken.LIKE_STORAGE)
       .useClass(InMemoryLikeStorage)
@@ -135,7 +136,7 @@ describe('LikeController (e2e) [multi-auth]', () => {
   // MARK: - Hooks
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule],
+      imports: [RootModule.register({ plugins: new Set([Plugin.LikeApi]) })],
     })
       .overrideProvider(ProviderToken.LIKE_STORAGE)
       .useClass(InMemoryLikeStorage)

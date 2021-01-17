@@ -21,7 +21,7 @@ describe('AppGateway (e2e)', () => {
   // MARK: - Hooks
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule],
+      imports: [RootModule.register({ plugins: new Set([]) })],
     })
       .overrideProvider(ProviderToken.CHAT_STORAGE)
       .useClass(InMemoryChatStorage)

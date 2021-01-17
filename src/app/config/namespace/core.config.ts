@@ -1,7 +1,7 @@
-import { Environment } from './environment';
+import { Environment } from '../environment';
 import { registerAs } from '@nestjs/config';
-import { ConfigNamespace } from './namespace';
-import { Plugin } from '../../plugins';
+import { ConfigNamespace } from '../namespace';
+import { ALL_PLUGINS, Plugin } from '../../../plugins';
 
 export interface CoreConfigProvider {
   plugins: Set<Plugin>;
@@ -17,7 +17,7 @@ export const CoreConfig = registerAs(
     const { PLUGINS, GCP_PROJECT_ID } = environment;
 
     return {
-      plugins: new Set(PLUGINS ? (PLUGINS.split(',') as Plugin[]) : []),
+      plugins: PLUGINS ? new Set(PLUGINS.split(',') as Plugin[]) : ALL_PLUGINS,
       gcp: {
         projectId: GCP_PROJECT_ID,
       },

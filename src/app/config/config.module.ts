@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
-import { ChatConfig } from './chat.config';
-import { CoreConfig } from './core.config';
+import { ChatConfig } from './namespace/chat.config';
+import { CoreConfig } from './namespace/core.config';
 import { validate } from './environment';
-import { LikeConfig } from './like.config';
-import { ServiceAccountConfig } from './service-account.config';
+import { LikeConfig } from './namespace/like.config';
+import { ServiceAccountConfig } from './namespace/service-account.config';
 
 // https://github.com/nestjs/config/issues/82
 // https://github.com/nestjs/config/issues/287#issuecomment-676340140

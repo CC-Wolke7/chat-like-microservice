@@ -3,11 +3,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   CoreConfig,
   CoreConfigProvider,
-} from '../../../app/config/core.config';
+} from '../../../app/config/namespace/core.config';
 import {
   LikeConfig,
   LikeConfigProvider,
-} from '../../../app/config/like.config';
+} from '../../../app/config/namespace/like.config';
 import { UserUUID } from '../../../chat/interfaces/storage';
 import {
   AggregateLike,

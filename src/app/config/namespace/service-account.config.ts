@@ -1,10 +1,10 @@
 import {
   ServiceAccount,
   ServiceAccountName,
-} from '../auth/interfaces/service-account';
-import { Environment } from './environment';
+} from '../../auth/interfaces/service-account';
+import { Environment } from '../environment';
 import { registerAs } from '@nestjs/config';
-import { ConfigNamespace } from './namespace';
+import { ConfigNamespace } from '../namespace';
 
 type Token = string;
 
