@@ -20,7 +20,7 @@ services:
       - 3000:3000
     depends_on:
       - firestore
-    command: yarn start
+    command: yarn start:dev
 
   like:
     image: like-microservice
@@ -38,7 +38,7 @@ services:
       - 3001:3000
     depends_on:
       - bigtable
-    command: yarn start
+    command: yarn start:dev
 
   # https://github.com/googleapis/nodejs-firestore/issues/1296#issuecomment-697948320
   firestore:
@@ -53,8 +53,3 @@ services:
     ports:
       - 8086:8086
     entrypoint: /bin/bash -c "gcloud config set project vet-shelter && /google-cloud-sdk/platform/bigtable-emulator/cbtemulator --host=0.0.0.0 --port=8086"
-
-  #   image: google/cloud-sdk:emulators
-  #   ports:
-  #     - 8086:8086
-  #   entrypoint: /bin/bash -c "gcloud config set project vet-shelter && /google-cloud-sdk/platform/bigtable-emulator/cbtemulator --host=0.0.0.0 --port=8086"
