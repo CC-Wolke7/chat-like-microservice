@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { ProviderToken } from '../../src/provider';
 import { ServiceTokenGuard } from '../../src/app/auth/strategy/service-token/service-token.guard';
 import { AuthGuardMock } from '../../src/app/auth/__mocks__/auth.guard';
 import {
@@ -10,7 +9,6 @@ import {
 } from '../../src/app/auth/interfaces/service-account';
 import { UserType } from '../../src/app/auth/interfaces/user';
 import { RootModule } from '../../src/root.module';
-import { InMemoryLikeStorage } from '../../src/like/storage/memory/memory-like.storage';
 import { PublicOfferLikes } from './interfaces/like';
 import { Vote } from '../../src/like/interfaces/storage';
 import { ServiceAccountConfig } from '../../src/app/config/namespace/service-account.config';
@@ -21,6 +19,7 @@ import {
   TEST_SERVICE_ACCOUNT_CONFIG,
 } from '../util/helper';
 import { Plugin } from '../../src/plugins';
+import { LikeStorageProviderType } from '../../src/like/like.storage';
 
 describe('LikeController (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -35,10 +34,15 @@ describe('LikeController (e2e) [authenticated]', () => {
   // MARK: - Hooks
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule.register({ plugins: new Set([Plugin.LikeApi]) })],
+      imports: [
+        RootModule.register({
+          plugins: new Set([Plugin.LikeApi]),
+          optionsForPlugin: {
+            [Plugin.LikeApi]: { storage: LikeStorageProviderType.InMemory },
+          },
+        }),
+      ],
     })
-      .overrideProvider(ProviderToken.LIKE_STORAGE)
-      .useClass(InMemoryLikeStorage)
       .overrideGuard(ServiceTokenGuard)
       .useValue(new AuthGuardMock(user))
       .compile();
@@ -136,10 +140,17 @@ describe('LikeController (e2e) [multi-auth]', () => {
   // MARK: - Hooks
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule.register({ plugins: new Set([Plugin.LikeApi]) })],
+      imports: [
+        RootModule.register({
+          plugins: new Set([Plugin.LikeApi]),
+          optionsForPlugin: {
+            [Plugin.LikeApi]: {
+              storage: LikeStorageProviderType.InMemory,
+            },
+          },
+        }),
+      ],
     })
-      .overrideProvider(ProviderToken.LIKE_STORAGE)
-      .useClass(InMemoryLikeStorage)
       .overrideProvider(ServiceAccountConfig.KEY)
       .useValue(TEST_SERVICE_ACCOUNT_CONFIG)
       .compile();

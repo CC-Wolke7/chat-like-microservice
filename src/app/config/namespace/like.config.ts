@@ -1,12 +1,12 @@
 import { registerAs } from '@nestjs/config';
-import { LikeStorageProviderType } from '../../../like/like.module';
+import { LikeStorageProviderType } from '../../../like/like.storage';
 import { Environment } from '../environment';
 import { ConfigNamespace } from '../namespace';
 
 export interface LikeConfigProvider {
-  storage?: LikeStorageProviderType;
-  bigtable?: {
-    instanceId: string;
+  storage: LikeStorageProviderType;
+  bigtable: {
+    instanceId?: string;
     host?: string;
     port?: number;
   };
@@ -24,14 +24,12 @@ export const LikeConfig = registerAs(
     } = environment;
 
     return {
-      storage: LIKE_STORAGE,
-      bigtable: LIKE_BIGTABLE_INSTANCE_ID
-        ? {
-            instanceId: LIKE_BIGTABLE_INSTANCE_ID,
-            host: LIKE_BIGTABLE_HOST,
-            port: LIKE_BIGTABLE_PORT,
-          }
-        : undefined,
+      storage: LIKE_STORAGE ?? LikeStorageProviderType.InMemory,
+      bigtable: {
+        instanceId: LIKE_BIGTABLE_INSTANCE_ID,
+        host: LIKE_BIGTABLE_HOST,
+        port: LIKE_BIGTABLE_PORT,
+      },
     };
   },
 );

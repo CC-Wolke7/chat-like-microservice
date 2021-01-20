@@ -19,14 +19,20 @@ export const ServiceAccountConfig = registerAs(
     const environment = (process.env as unknown) as Environment;
     const { RECOMMENDER_BOT_TOKEN, RECOMMENDER_BOT_USER_UUID } = environment;
 
+    const tokenWhitelist: ServiceAccountConfigProvider['tokenWhitelist'] = [];
+    const accountForToken: ServiceAccountConfigProvider['accountForToken'] = {};
+
+    if (RECOMMENDER_BOT_TOKEN && RECOMMENDER_BOT_USER_UUID) {
+      tokenWhitelist.push(RECOMMENDER_BOT_TOKEN);
+      accountForToken[RECOMMENDER_BOT_TOKEN] = {
+        name: ServiceAccountName.RecommenderBot,
+        uuid: RECOMMENDER_BOT_USER_UUID,
+      };
+    }
+
     return {
-      tokenWhitelist: [RECOMMENDER_BOT_TOKEN],
-      accountForToken: {
-        [RECOMMENDER_BOT_TOKEN]: {
-          name: ServiceAccountName.RecommenderBot,
-          uuid: RECOMMENDER_BOT_USER_UUID,
-        },
-      },
+      tokenWhitelist,
+      accountForToken,
     };
   },
 );

@@ -20,7 +20,7 @@ const FACTORY_FOR_PLUGIN: Record<Plugin, Type<PluginFactory>> = {
 
 interface RootModuleOptions {
   plugins: Set<Plugin>;
-  optionsForPlugin?: Record<Plugin, PluginFactoryOptions | undefined>;
+  optionsForPlugin: Record<string, PluginFactoryOptions | undefined>;
 }
 
 export class RootModule implements NestModule {
@@ -30,7 +30,7 @@ export class RootModule implements NestModule {
 
     const modules = Array.from(plugins).map((plugin) => {
       const Factory = FACTORY_FOR_PLUGIN[plugin];
-      const options = optionsForPlugin ? optionsForPlugin[plugin] : undefined;
+      const options = optionsForPlugin[plugin];
 
       return new Factory().create(options);
     });

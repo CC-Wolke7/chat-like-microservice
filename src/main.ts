@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { ChatConfig } from './app/config/namespace/chat.config';
 import { CoreConfig } from './app/config/namespace/core.config';
+import { ChatConfig } from './app/config/namespace/chat.config';
 import { LikeConfig } from './app/config/namespace/like.config';
+import { ChatFactoryOptions } from './chat/chat.module';
 import { setupDocs } from './docs';
+import { LikeFactoryOptions } from './like/like.module';
 import { Plugin } from './plugins';
 import { RootModule } from './root.module';
 
@@ -18,16 +20,20 @@ async function bootstrap(): Promise<void> {
   const { storage: chatStorage } = ChatConfig();
   const { storage: likeStorage } = LikeConfig();
 
+  const chatPluginOptions: ChatFactoryOptions = {
+    storage: chatStorage,
+  };
+
+  const likePluginOptions: LikeFactoryOptions = {
+    storage: likeStorage,
+  };
+
   const app = await NestFactory.create(
     RootModule.register({
       plugins,
       optionsForPlugin: {
-        [Plugin.ChatApi]: {
-          chatStorage,
-        },
-        [Plugin.LikeApi]: {
-          likeStorage,
-        },
+        [Plugin.ChatApi]: chatPluginOptions,
+        [Plugin.LikeApi]: likePluginOptions,
       },
     }),
   );

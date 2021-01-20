@@ -7,8 +7,6 @@ import {
 } from '../../src/chat/chat.dto';
 import { PublicChat, PublicChatMessage } from './interfaces/chat';
 import { equalSet, isValidUUID } from '../../src/util/helper';
-import { ProviderToken } from '../../src/provider';
-import { InMemoryChatStorage } from '../../src/chat/storage/memory/memory-chat.storage';
 import { ServiceTokenGuard } from '../../src/app/auth/strategy/service-token/service-token.guard';
 import { AuthGuardMock } from '../../src/app/auth/__mocks__/auth.guard';
 import {
@@ -20,6 +18,7 @@ import * as qs from 'qs';
 import { isValidISODateString } from 'iso-datestring-validator';
 import { RootModule } from '../../src/root.module';
 import { Plugin } from '../../src/plugins';
+import { ChatStorageProviderType } from '../../src/chat/chat.storage';
 
 describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -34,10 +33,17 @@ describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Hooks
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [RootModule.register({ plugins: new Set([Plugin.ChatApi]) })],
+      imports: [
+        RootModule.register({
+          plugins: new Set([Plugin.ChatApi]),
+          optionsForPlugin: {
+            [Plugin.ChatApi]: {
+              storage: ChatStorageProviderType.InMemory,
+            },
+          },
+        }),
+      ],
     })
-      .overrideProvider(ProviderToken.CHAT_STORAGE)
-      .useClass(InMemoryChatStorage)
       .overrideGuard(ServiceTokenGuard)
       .useValue(new AuthGuardMock(user))
       .compile();

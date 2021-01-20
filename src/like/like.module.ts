@@ -7,11 +7,7 @@ import { AuthModule } from '../app/auth/auth.module';
 import { ConfigModule } from '../app/config/config.module';
 import { InMemoryLikeStorage } from './storage/memory/memory-like.storage';
 import { PluginFactory } from '../plugins';
-
-export enum LikeStorageProviderType {
-  InMemory = 'memory',
-  Bigtable = 'bigtable',
-}
+import { LikeStorageProviderType } from './like.storage';
 
 const CLASS_FOR_LIKE_STORAGE_PROVIDER_TYPE: Record<
   LikeStorageProviderType,
@@ -21,16 +17,14 @@ const CLASS_FOR_LIKE_STORAGE_PROVIDER_TYPE: Record<
   [LikeStorageProviderType.Bigtable]: BigtableLikeStorage,
 };
 
-interface LikeFactoryOptions {
+export interface LikeFactoryOptions {
   storage: LikeStorageProviderType;
 }
 
 export class LikeModuleFactory implements PluginFactory {
   // MARK: - Public Methods
-  create(options?: LikeFactoryOptions): DynamicModule {
-    const storageProvider = this.getStorageProvider(
-      options?.storage ?? LikeStorageProviderType.InMemory,
-    );
+  create(options: LikeFactoryOptions): DynamicModule {
+    const storageProvider = this.getStorageProvider(options.storage);
 
     return {
       module: LikeModule,
