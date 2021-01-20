@@ -6,7 +6,7 @@ import { ALL_PLUGINS, Plugin } from '../../../plugins';
 export interface CoreConfigProvider {
   plugins: Set<Plugin>;
   gcp: {
-    projectId: string;
+    projectId?: string;
   };
 }
 

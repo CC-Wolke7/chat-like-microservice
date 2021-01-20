@@ -3,18 +3,15 @@ import { ProviderToken } from '../provider';
 import { ChatController } from './chat.controller';
 import { ChatGateway } from './gateway/chat.gateway';
 import { ChatService } from './chat.service';
-import { FirestoreChatStorage } from './storage/firestore/firestore-chat.storage';
 import { AuthModule } from '../app/auth/auth.module';
 import { ConfigModule } from '../app/config/config.module';
+import { ChatStorageProviderType } from './chat.storage';
+import { FirestoreChatStorage } from './storage/firestore/firestore-chat.storage';
 import { InMemoryChatStorage } from './storage/memory/memory-chat.storage';
 import { PluginFactory } from '../plugins';
+import { RedisBroker } from './gateway/broker/redis-broker';
 
-export enum ChatStorageProviderType {
-  InMemory = 'memory',
-  Firestore = 'firestore',
-}
-
-const CLASS_FOR_CHAT_STORAGE_PROVIDER_TYPE: Record<
+export const CLASS_FOR_CHAT_STORAGE_PROVIDER_TYPE: Record<
   ChatStorageProviderType,
   Type<any>
 > = {
@@ -22,20 +19,23 @@ const CLASS_FOR_CHAT_STORAGE_PROVIDER_TYPE: Record<
   [ChatStorageProviderType.Firestore]: FirestoreChatStorage,
 };
 
-interface ChatFactoryOptions {
+export interface ChatFactoryOptions {
   storage: ChatStorageProviderType;
 }
 
 export class ChatModuleFactory implements PluginFactory {
   // MARK: - Public Methods
-  create(options?: ChatFactoryOptions): DynamicModule {
-    const storageProvider = this.getStorageProvider(
-      options?.storage ?? ChatStorageProviderType.InMemory,
-    );
+  create(options: ChatFactoryOptions): DynamicModule {
+    const storageProvider = this.getStorageProvider(options.storage);
 
     const notificationProvider: Provider = {
       provide: ProviderToken.CHAT_NOTIFIER,
       useClass: ChatGateway,
+    };
+
+    const brokerProvider: Provider = {
+      provide: ProviderToken.CHAT_BROKER,
+      useClass: RedisBroker,
     };
 
     return {
@@ -46,6 +46,7 @@ export class ChatModuleFactory implements PluginFactory {
         ChatService,
         storageProvider,
         notificationProvider,
+        brokerProvider,
         // ChatGateway, // uncomment if different CHAT_NOTIFIER is used, otherwise this will be instantiated twice
       ],
     };

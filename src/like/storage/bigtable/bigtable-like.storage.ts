@@ -1,9 +1,5 @@
 import { Bigtable, Instance, Table } from '@google-cloud/bigtable';
-import {
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   CoreConfig,
   CoreConfigProvider,
@@ -21,7 +17,7 @@ import {
   ObjectUUID,
   Vote,
 } from '../../interfaces/storage';
-import { LikeException } from '../../like.exception';
+import { LikeConfigException } from '../../like.exception';
 
 enum ColumnFamily {
   LikedBy = 'likedBy',
@@ -49,22 +45,20 @@ export class BigtableLikeStorage implements LikeStorageProvider {
 
   // MARK: - Initialization
   constructor(
-    @Inject(CoreConfig.KEY) { gcp: gcpConfig }: CoreConfigProvider,
-    @Inject(LikeConfig.KEY) { bigtable: bigtableConfig }: LikeConfigProvider,
+    @Inject(CoreConfig.KEY) { gcp: { projectId } }: CoreConfigProvider,
+    @Inject(LikeConfig.KEY)
+    { bigtable: { instanceId, host, port } }: LikeConfigProvider,
   ) {
-    if (!bigtableConfig) {
-      throw new InternalServerErrorException(LikeException.NoBigtableConfig);
+    if (!instanceId) {
+      throw new Error(LikeConfigException.NoBigtableInstanceId);
     }
 
     this.bigtable = new Bigtable({
-      projectId: gcpConfig.projectId,
-      apiEndpoint:
-        bigtableConfig.host && bigtableConfig.port
-          ? `${bigtableConfig.host}:${bigtableConfig.port}`
-          : undefined,
+      projectId,
+      apiEndpoint: host && port ? `${host}:${port}` : undefined,
     });
 
-    this.instance = this.bigtable.instance(bigtableConfig.instanceId);
+    this.instance = this.bigtable.instance(instanceId!);
   }
 
   // MARK: - Public Methods

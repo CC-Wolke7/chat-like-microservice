@@ -8,16 +8,32 @@ import { ServiceAccountConfig } from './namespace/service-account.config';
 
 // https://github.com/nestjs/config/issues/82
 // https://github.com/nestjs/config/issues/287#issuecomment-676340140
+// @TODO: move to indiviual plugins to allow dynamic loading with non-optional typing
+
+function getEnvFiles(): string[] {
+  const files: string[] = [];
+
+  switch (process.env.NODE_ENV) {
+    case 'production':
+      files.push(...['.env.production']);
+      break;
+    case 'development':
+      files.push(...['.env.development', '.env.development.local']);
+      break;
+    case 'test':
+      files.push(...['.env.test']);
+      break;
+    default:
+      break;
+  }
+
+  return ['.env', ...files];
+}
+
 @Module({
   imports: [
     NestConfigModule.forRoot({
-      envFilePath: [
-        '.env.test',
-        '.env.development.local',
-        '.env.development',
-        '.env.production',
-        '.env',
-      ],
+      envFilePath: getEnvFiles(),
       load: [CoreConfig, ServiceAccountConfig, ChatConfig, LikeConfig],
       cache: true,
       validate,

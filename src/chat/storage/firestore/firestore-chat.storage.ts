@@ -13,13 +13,13 @@ import { Firestore } from '@google-cloud/firestore';
 import * as crypto from 'crypto';
 import { ChatConverter, MessageConverter } from './firestore-chat-converter';
 import {
-  ChatConfig,
-  ChatConfigProvider,
-} from '../../../app/config/namespace/chat.config';
-import {
   CoreConfig,
   CoreConfigProvider,
 } from '../../../app/config/namespace/core.config';
+import {
+  ChatConfig,
+  ChatConfigProvider,
+} from '../../../app/config/namespace/chat.config';
 
 export type FirestoreChatModel = Omit<ChatModel, 'uuid'> & {
   participantsHash: string;
@@ -42,13 +42,13 @@ export class FirestoreChatStorage implements ChatStorageProvider {
 
   // MARK: - Initialization
   constructor(
-    @Inject(CoreConfig.KEY) config: CoreConfigProvider,
-    @Inject(ChatConfig.KEY) { firestore }: ChatConfigProvider,
+    @Inject(CoreConfig.KEY) { gcp: { projectId } }: CoreConfigProvider,
+    @Inject(ChatConfig.KEY) { firestore: { host, port } }: ChatConfigProvider,
   ) {
     this.firestore = new Firestore({
-      projectId: config.gcp.projectId,
-      host: firestore?.host,
-      port: firestore?.port,
+      projectId,
+      host,
+      port,
     });
 
     this.chats = this.firestore

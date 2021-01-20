@@ -9,8 +9,8 @@ import {
   IsUUID,
   validateSync,
 } from 'class-validator';
-import { ChatStorageProviderType } from '../../chat/chat.module';
-import { LikeStorageProviderType } from '../../like/like.module';
+import { ChatStorageProviderType } from '../../chat/chat.storage';
+import { LikeStorageProviderType } from '../../like/like.storage';
 import { Plugin } from '../../plugins';
 
 export class Environment {
@@ -22,15 +22,18 @@ export class Environment {
   @IsEnum(Plugin, { each: true })
   readonly PLUGINS?: string;
 
+  @IsOptional()
   @IsString()
-  readonly GCP_PROJECT_ID: string;
+  readonly GCP_PROJECT_ID?: string;
 
   // Service Account Config
+  @IsOptional()
   @IsString()
-  readonly RECOMMENDER_BOT_TOKEN: string;
+  readonly RECOMMENDER_BOT_TOKEN?: string;
 
+  @IsOptional()
   @IsUUID(4)
-  readonly RECOMMENDER_BOT_USER_UUID: string;
+  readonly RECOMMENDER_BOT_USER_UUID?: string;
 
   // Chat Config
   @IsOptional()
@@ -44,6 +47,18 @@ export class Environment {
   @IsOptional()
   @IsNumber()
   readonly CHAT_FIRESTORE_PORT?: number;
+
+  @IsOptional()
+  @IsUUID(4)
+  readonly CHAT_REDIS_CLIENT_ID?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly CHAT_REDIS_HOST?: string;
+
+  @IsOptional()
+  @IsNumber()
+  readonly CHAT_REDIS_PORT?: number;
 
   // Like Config
   @IsOptional()
