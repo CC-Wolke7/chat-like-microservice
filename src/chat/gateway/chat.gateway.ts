@@ -27,8 +27,12 @@ import { HttpAdapterHost } from '@nestjs/core';
 import * as http from 'http';
 import { AuthenticatedWsGateway } from '../../util/AuthenticatedWsGateway';
 import { ServiceTokenStrategy } from '../../app/auth/strategy/service-token/service-token.strategy';
-import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ChatGatewayExceptionFilter } from './chat.gateway.filter';
+import { BrokerMessage, MessageBrokerProvider } from './interfaces/broker';
+import { ProviderToken } from '../../provider';
+import { promisify } from 'util';
+import { ChatGatewayException } from './chat.gateway.exception';
 
 type User = ServiceAccountUser;
 
@@ -55,6 +59,7 @@ export class ChatGateway
   // MARK: - Private Properties
   private readonly service: ChatService;
   private readonly serviceTokenStrategy: ServiceTokenStrategy;
+  private readonly broker: MessageBrokerProvider;
 
   private readonly socketForUser = new Map<
     UserUUID,
@@ -66,11 +71,15 @@ export class ChatGateway
     adapterHost: HttpAdapterHost,
     service: ChatService,
     serviceTokenStrategy: ServiceTokenStrategy,
+    @Inject(ProviderToken.CHAT_BROKER) broker: MessageBrokerProvider,
   ) {
     super(adapterHost);
 
     this.service = service;
     this.serviceTokenStrategy = serviceTokenStrategy;
+
+    this.broker = broker;
+    this.broker.onMessage = this.onBrokerMessage.bind(this);
   }
 
   // MARK: - Public Methods
@@ -132,7 +141,7 @@ export class ChatGateway
       data: chat,
     };
 
-    this.broadcast(
+    return this.broadcast(
       new Set(
         chat.participants.filter(
           (participant) => includeCreator || participant !== chat.creator,
@@ -152,7 +161,7 @@ export class ChatGateway
       data: message,
     };
 
-    this.broadcast(
+    return this.broadcast(
       new Set(
         chat.participants.filter(
           (participant) => includeSender || participant !== message.sender,
@@ -163,19 +172,48 @@ export class ChatGateway
   }
 
   // MARK: - Private Methods
-  private message(user: UserUUID, payload: WsResponse): void {
+  private async message(user: UserUUID, payload: WsResponse): Promise<void> {
     const userSocket = this.socketForUser.get(user);
 
-    if (userSocket === undefined || userSocket.readyState !== WebSocket.OPEN) {
-      return;
+    if (userSocket === undefined) {
+      throw new Error(ChatGatewayException.ParticipantNotConnected);
     }
 
-    userSocket.send(JSON.stringify(payload));
+    if (userSocket.readyState !== WebSocket.OPEN) {
+      throw new Error(ChatGatewayException.ParticipantNotReady);
+    }
+
+    const send = promisify(userSocket.send).bind(userSocket);
+    await send(JSON.stringify(payload));
   }
 
-  private broadcast(users: Set<UserUUID>, payload: WsResponse): void {
+  private async broadcast(
+    users: Set<UserUUID>,
+    payload: WsResponse,
+  ): Promise<void> {
+    const disconnectedUsers: UserUUID[] = [];
+
     for (const user of users) {
-      this.message(user, payload);
+      try {
+        await this.message(user, payload);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message === ChatGatewayException.ParticipantNotConnected) {
+            disconnectedUsers.push(user);
+          }
+
+          // @TODO: handle retry
+        }
+
+        // @TODO: handle retry
+      }
+    }
+
+    if (disconnectedUsers.length >= 1) {
+      await this.broker.publishMessage({
+        users: disconnectedUsers,
+        payload,
+      });
     }
   }
 
@@ -188,5 +226,16 @@ export class ChatGateway
     }
 
     return chat;
+  }
+
+  private onBrokerMessage(message: BrokerMessage): void {
+    const connectedUsers = message.users.filter(
+      (user) => this.socketForUser.get(user) !== undefined,
+    );
+
+    for (const user of connectedUsers) {
+      // @TODO: handle retry
+      this.message(user, message.payload);
+    }
   }
 }

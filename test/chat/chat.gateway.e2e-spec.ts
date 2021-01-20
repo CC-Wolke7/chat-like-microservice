@@ -11,17 +11,20 @@ import {
   CREATOR_SERVICE_TOKEN,
   NON_PARTICIPANT_SERVICE_TOKEN,
   PARTICIPANT_SERVICE_TOKEN,
+  REDIS_CLIENT_ID_1,
+  REDIS_CLIENT_ID_2,
   setupChatWebsocketTest,
   stopWebsocketTest,
   TEST_SERVICE_ACCOUNT_CONFIG,
-  WebsocketTestEnvironment,
 } from '../util/helper';
 import * as WebSocket from 'ws';
 import { ChatException } from '../../src/chat/chat.exception';
+import { INestApplication } from '@nestjs/common';
 
 describe('ChatGateway (e2e) [authenticated]', () => {
   // MARK: - Properties
-  let environment: WebsocketTestEnvironment;
+  let server: any;
+  let apps: INestApplication[];
   let sockets: WebSocket[];
 
   const chatCreator =
@@ -29,18 +32,21 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
   // MARK: - Hooks
   beforeEach(async () => {
-    environment = await setupChatWebsocketTest(4001);
+    const { server: newServer, app: newApp } = await setupChatWebsocketTest(
+      4001,
+      REDIS_CLIENT_ID_1,
+    );
+    server = newServer;
+    apps = [newApp];
     sockets = [];
   });
 
   afterEach(async () => {
-    await stopWebsocketTest(environment.app, ...sockets);
+    await stopWebsocketTest(apps, sockets);
   });
 
   // MARK: - Tests
   it('should connect', (done) => {
-    const { server } = environment;
-
     const socket = connectToWebsocket(server, {
       headers: {
         Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
@@ -55,8 +61,6 @@ describe('ChatGateway (e2e) [authenticated]', () => {
   });
 
   it('`CREATE_MESSAGE` should fail if `chat` is not a UUID', async () => {
-    const { server } = environment;
-
     const createMessageEvent: WsResponse<CreateMessageEventPayload> = {
       event: ChatEvent.CreateMessage,
     } as WsResponse<CreateMessageEventPayload>;
@@ -88,8 +92,6 @@ describe('ChatGateway (e2e) [authenticated]', () => {
   });
 
   it('`CREATE_MESSAGE` should fail if `chat` is not a UUID', async () => {
-    const { server } = environment;
-
     const createMessageEventPayload: CreateMessageEventPayload = {
       chat: 'chat-1',
       message: 'hello',
@@ -127,8 +129,6 @@ describe('ChatGateway (e2e) [authenticated]', () => {
   });
 
   it('`CREATE_MESSAGE` should fail if `message` is not a string', async () => {
-    const { server } = environment;
-
     const createMessageEventPayload: CreateMessageEventPayload = {
       chat: 'a35fe77b-7d4f-4da2-8d5d-271cf9d82fee',
       message: 12 as any,
@@ -166,8 +166,6 @@ describe('ChatGateway (e2e) [authenticated]', () => {
   });
 
   it('`CREATE_MESSAGE` should fail if chat does not exist', async () => {
-    const { server } = environment;
-
     const createMessageEventPayload: CreateMessageEventPayload = {
       chat: 'a35fe77b-7d4f-4da2-8d5d-271cf9d82fee',
       message: 'hello',
@@ -205,8 +203,6 @@ describe('ChatGateway (e2e) [authenticated]', () => {
   });
 
   it('`CREATE_MESSAGE` should succeed and only notify chat participants (including creator)', async () => {
-    const { server } = environment;
-
     const createChatPayload: CreateChatPayload = {
       participants: ['f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba'],
     };
@@ -328,4 +324,112 @@ describe('ChatGateway (e2e) [authenticated]', () => {
       .expect(200)
       .expect([message!]);
   });
+
+  it('`CREATE_MESSAGE` should route message via broker', async () => {
+    const firstServer = server;
+    const {
+      app: secondApp,
+      server: secondServer,
+    } = await setupChatWebsocketTest(3999, REDIS_CLIENT_ID_2);
+
+    apps.push(secondApp);
+
+    const createChatPayload: CreateChatPayload = {
+      participants: ['f384a3d9-cc6d-4a5d-b476-50a69a3bf7ba'],
+    };
+
+    const chat = (
+      await request(firstServer)
+        .post('/chats')
+        .set('Authorization', `Bearer ${CREATOR_SERVICE_TOKEN}`)
+        .send(createChatPayload)
+        .expect(201)
+    ).body as PublicChat;
+
+    const createMessageEventPayload: CreateMessageEventPayload = {
+      chat: chat.uuid,
+      message: 'hello',
+    };
+
+    const createMessageEvent: WsResponse<CreateMessageEventPayload> = {
+      event: ChatEvent.CreateMessage,
+      data: createMessageEventPayload,
+    };
+
+    const creatorSocket = connectToWebsocket(firstServer, {
+      headers: {
+        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
+      },
+    });
+
+    const participantSocket = connectToWebsocket(secondServer, {
+      headers: {
+        Authorization: `Bearer ${PARTICIPANT_SERVICE_TOKEN}`,
+      },
+    });
+
+    sockets.push(creatorSocket, participantSocket);
+
+    const creatorConnection = new Promise<void>((resolve) => {
+      creatorSocket.onopen = () => {
+        resolve();
+      };
+    });
+
+    const participantConnection = new Promise<void>((resolve) => {
+      participantSocket.onopen = () => {
+        resolve();
+      };
+    });
+
+    await Promise.all([creatorConnection, participantConnection]);
+
+    await new Promise<void>((resolve) => {
+      let creatorMessageCount = 0;
+      let participantMessageCount = 0;
+
+      creatorSocket.onmessage = (event) => {
+        const chatEvent = JSON.parse(
+          event.data as any,
+        ) as WsResponse<PublicChatMessage>;
+
+        expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
+
+        creatorMessageCount = creatorMessageCount + 1;
+      };
+
+      // Notifies participant connected to different server instance
+      participantSocket.onmessage = (event) => {
+        const chatEvent = JSON.parse(
+          event.data as any,
+        ) as WsResponse<PublicChatMessage>;
+
+        if (chatEvent.event !== ChatEvent.MessageCreated) {
+          return;
+        }
+
+        const keys = Object.keys(chatEvent.data);
+        const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
+
+        expect(keys.length).toEqual(expectedKeys.length);
+        expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
+
+        expect(chatEvent.data.chat).toEqual(chat.uuid);
+        expect(chatEvent.data.sender).toEqual(chatCreator.uuid);
+        expect(isValidISODateString(chatEvent.data.date)).toBeTruthy();
+        expect(chatEvent.data.body).toEqual(createMessageEventPayload.message);
+
+        participantMessageCount = participantMessageCount + 1;
+      };
+
+      creatorSocket.send(JSON.stringify(createMessageEvent));
+
+      setTimeout(() => {
+        expect(creatorMessageCount).toEqual(1);
+        expect(participantMessageCount).toEqual(1);
+
+        resolve();
+      }, 5000); // 5 seconds
+    });
+  }, 10000); // 10 seconds
 });

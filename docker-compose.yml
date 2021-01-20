@@ -3,21 +3,43 @@ version: '3.4'
 x-api-env: &api-env
   GCP_PROJECT_ID: vet-shelter # must match value passed to emulators
 
+x-chat-env: &chat-env
+  GCP_PROJECT_ID: vet-shelter
+  FIRESTORE_EMULATOR_HOST: firestore:8970
+  PLUGINS: CHAT_API
+  CHAT_STORAGE: firestore
+  CHAT_REDIS_HOST: redis
+  CHAT_REDIS_PORT: 6379
+
 services:
-  chat:
+  chat_1:
     image: chat-microservice
     build:
       context: .
     environment:
-      <<: *api-env
-      FIRESTORE_EMULATOR_HOST: firestore:8970
-      PLUGINS: CHAT_API
-      CHAT_STORAGE: firestore
+      <<: *chat-env
+      CHAT_REDIS_CLIENT_ID: 749fbca5-a917-4811-a9dc-e542f10faaa3
     volumes:
       - ./src:/app/src
       - ./test:/app/test
     ports:
       - 3000:3000
+    depends_on:
+      - firestore
+    command: yarn start:dev
+
+  chat_2:
+    image: chat-microservice
+    build:
+      context: .
+    environment:
+      <<: *chat-env
+      CHAT_REDIS_CLIENT_ID: 6ef9cd02-2ac1-4272-bc5a-d8fbee609c93
+    volumes:
+      - ./src:/app/src
+      - ./test:/app/test
+    ports:
+      - 3001:3000
     depends_on:
       - firestore
     command: yarn start:dev
@@ -35,7 +57,7 @@ services:
       - ./src:/app/src
       - ./test:/app/test
     ports:
-      - 3001:3000
+      - 3002:3000
     depends_on:
       - bigtable
     command: yarn start:dev
@@ -53,3 +75,8 @@ services:
     ports:
       - 8086:8086
     entrypoint: /bin/bash -c "gcloud config set project vet-shelter && /google-cloud-sdk/platform/bigtable-emulator/cbtemulator --host=0.0.0.0 --port=8086"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379

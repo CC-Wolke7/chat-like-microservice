@@ -10,8 +10,9 @@ import {
 import { ServiceAccountName } from '../../src/app/auth/interfaces/service-account';
 import { Plugin } from '../../src/plugins';
 import { ChatStorageProviderType } from '../../src/chat/chat.storage';
+import { ChatConfig } from '../../src/app/config/namespace/chat.config';
 
-// Service Accouns
+// Service Accounts Config
 export const CREATOR_SERVICE_TOKEN =
   'MWZhMzExZDhkOGM1ZWI0ODBmYmQ5YWQyYTdkMzNmNmUK';
 export const PARTICIPANT_SERVICE_TOKEN =
@@ -41,6 +42,10 @@ export const TEST_SERVICE_ACCOUNT_CONFIG: ServiceAccountConfigProvider = {
   },
 };
 
+// Chat Config
+export const REDIS_CLIENT_ID_1 = '824e4a6e-589f-4760-97a9-8bb38b1de80f';
+export const REDIS_CLIENT_ID_2 = 'b90ac58c-2945-4e5d-9cdd-b18d84946280';
+
 // Setup
 export interface WebsocketTestEnvironment {
   app: INestApplication;
@@ -63,8 +68,8 @@ export async function setupWebsocketTest(
 }
 
 export async function stopWebsocketTest(
-  app: INestApplication,
-  ...sockets: WebSocket[]
+  apps: INestApplication[],
+  sockets: WebSocket[],
 ): Promise<void> {
   try {
     for (const socket of sockets) {
@@ -76,7 +81,9 @@ export async function stopWebsocketTest(
     //
   }
 
-  await app.close();
+  for (const app of apps) {
+    await app.close();
+  }
 }
 
 export function connectToWebsocket(
@@ -92,7 +99,10 @@ export function connectToWebsocket(
 // Chat Websocket Test
 export async function setupChatWebsocketTest(
   port: number,
+  redisClientId: string,
 ): Promise<WebsocketTestEnvironment> {
+  const chatConfig = ChatConfig();
+
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [
       RootModule.register({
@@ -107,6 +117,14 @@ export async function setupChatWebsocketTest(
   })
     .overrideProvider(ServiceAccountConfig.KEY)
     .useValue(TEST_SERVICE_ACCOUNT_CONFIG)
+    .overrideProvider(ChatConfig.KEY)
+    .useValue({
+      ...chatConfig,
+      redis: {
+        ...chatConfig.redis,
+        clientId: redisClientId,
+      },
+    })
     .compile();
 
   const { app, server } = await setupWebsocketTest(moduleFixture, port);
