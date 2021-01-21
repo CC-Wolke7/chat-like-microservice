@@ -2,10 +2,12 @@ import {
   ArrayMinSize,
   ArrayUnique,
   IsArray,
+  IsBoolean,
   IsOptional,
   IsString,
   IsUUID,
 } from 'class-validator';
+import { TransformToBoolean } from '../../test/util/decorator';
 import { ChatMessageUUID, ChatUUID, UserUUID } from './interfaces/storage';
 
 // MARK: - Request Query
@@ -16,6 +18,11 @@ export class GetChatsQuery {
   @ArrayUnique()
   @IsUUID(4, { each: true })
   readonly participants?: UserUUID[];
+
+  @IsOptional()
+  @TransformToBoolean()
+  @IsBoolean()
+  readonly strictEqual?: boolean;
 }
 
 // MARK: - Request Payload

@@ -46,7 +46,7 @@ export const TEST_SERVICE_ACCOUNT_CONFIG: ServiceAccountConfigProvider = {
     },
     [RECOMMENDER_BOT_TOKEN]: {
       name: ServiceAccountName.RecommenderBot,
-      uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
+      uuid: '51180bfc-b749-470b-8205-63d4392ff7d5',
     },
     [CREATOR_SERVICE_TOKEN]: {
       name: ServiceAccountName.UnitTest,

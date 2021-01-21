@@ -54,7 +54,11 @@ export class ChatController {
     @Query() query: GetChatsQuery,
     @User() user: ChatServiceUser,
   ): Promise<GetChatsResponse> {
-    return await this.service.getChats(user.uuid, new Set(query.participants));
+    return await this.service.getChats(
+      user.uuid,
+      new Set(query.participants),
+      query.strictEqual,
+    );
   }
 
   @Post('chats')

@@ -39,11 +39,12 @@ export class ChatService {
   async getChats(
     user: UserUUID,
     participants?: Set<UserUUID>,
+    strictEqual = false,
   ): Promise<ChatModel[]> {
     const allParticipants =
       participants !== undefined ? participants.add(user) : new Set([user]);
 
-    return this.storage.findChatsByParticipants(allParticipants, false);
+    return this.storage.findChatsByParticipants(allParticipants, strictEqual);
   }
 
   async createChat(
