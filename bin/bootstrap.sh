@@ -51,7 +51,10 @@ echo
 header "Setup complete!"
 echo
 echo "Access the chat-api with a web browser:"
-echo "  $ open http://localhost:3000/"
+echo "  $ open http://localhost:3000/docs"
+echo
+echo "Access the like-api with a web browser:"
+echo "  $ open http://localhost:3002/docs"
 echo
 echo "Perform future management tasks with docker-compose:"
 echo "  $ docker-compose help"

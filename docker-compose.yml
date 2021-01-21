@@ -13,7 +13,7 @@ x-chat-env: &chat-env
 
 services:
   chat_1:
-    image: chat-microservice
+    image: chat-like-microservice
     build:
       context: .
     environment:
@@ -26,10 +26,11 @@ services:
       - 3000:3000
     depends_on:
       - firestore
+      - redis
     command: yarn start:dev
 
   chat_2:
-    image: chat-microservice
+    image: chat-like-microservice
     build:
       context: .
     environment:
@@ -42,10 +43,11 @@ services:
       - 3001:3000
     depends_on:
       - firestore
+      - redis
     command: yarn start:dev
 
   like:
-    image: like-microservice
+    image: chat-like-microservice
     build:
       context: .
     environment:
