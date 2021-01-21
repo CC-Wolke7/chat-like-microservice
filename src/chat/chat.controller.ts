@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ChatService } from './chat.service';
+import { ChatService, ChatServiceUser } from './chat.service';
 import {
   CreateChatPayload,
   CreateMessagePayload,
@@ -20,17 +20,18 @@ import {
   CreateChatResponse,
 } from './chat.dto';
 import { ChatModel } from './interfaces/storage';
-import { ServiceTokenGuard } from '../app/auth/strategy/service-token/service-token.guard';
 import { User } from '../app/auth/user.decorator';
-import { AuthenticatedUser } from '../app/auth/interfaces/user';
-import { RecommenderBot } from '../app/auth/interfaces/service-account';
 import { ChatByUUIDPipe } from './chat.pipe';
 import { ProviderToken } from '../provider';
 import { ChatNotificationProvider } from './interfaces/notification';
 import { ApiTags } from '@nestjs/swagger';
+import {
+  GoogleOAuthGuard,
+  OrAuthGuard,
+  ServiceTokenGuard,
+} from '../app/auth/auth.guard';
 
-// @TODO: add JWT & recommender bot guard
-@UseGuards(ServiceTokenGuard)
+@UseGuards(new OrAuthGuard(new ServiceTokenGuard(), new GoogleOAuthGuard()))
 @ApiTags('chat')
 @Controller()
 export class ChatController {
@@ -51,7 +52,7 @@ export class ChatController {
   @Get('chats')
   async getChats(
     @Query() query: GetChatsQuery,
-    @User() user: AuthenticatedUser,
+    @User() user: ChatServiceUser,
   ): Promise<GetChatsResponse> {
     return await this.service.getChats(user.uuid, new Set(query.participants));
   }
@@ -59,7 +60,7 @@ export class ChatController {
   @Post('chats')
   async createChat(
     @Body() payload: CreateChatPayload,
-    @User() user: AuthenticatedUser | RecommenderBot,
+    @User() user: ChatServiceUser,
   ): Promise<CreateChatResponse> {
     const chat = await this.service.createChat(
       user,
@@ -74,7 +75,7 @@ export class ChatController {
   @Get('chat/:chatId/messages')
   async getMessages(
     @Param('chatId', ParseUUIDPipe, ChatByUUIDPipe) chat: ChatModel,
-    @User() user: AuthenticatedUser,
+    @User() user: ChatServiceUser,
   ): Promise<GetChatMessagesResponse> {
     this.service.checkParticipation(chat, user.uuid);
 
@@ -85,7 +86,7 @@ export class ChatController {
   async sendMessage(
     @Param('chatId', ParseUUIDPipe, ChatByUUIDPipe) chat: ChatModel,
     @Body() payload: CreateMessagePayload,
-    @User() user: AuthenticatedUser | RecommenderBot,
+    @User() user: ChatServiceUser,
   ): Promise<CreateChatMessageResponse> {
     this.service.checkParticipation(chat, user.uuid);
 
