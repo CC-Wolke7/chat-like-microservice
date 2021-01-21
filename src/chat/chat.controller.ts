@@ -20,7 +20,6 @@ import {
   CreateChatResponse,
 } from './chat.dto';
 import { ChatModel } from './interfaces/storage';
-import { ServiceTokenGuard } from '../app/auth/strategy/service-token/service-token.guard';
 import { User } from '../app/auth/user.decorator';
 import { AuthenticatedUser } from '../app/auth/interfaces/user';
 import { RecommenderBot } from '../app/auth/interfaces/service-account';
@@ -28,6 +27,7 @@ import { ChatByUUIDPipe } from './chat.pipe';
 import { ProviderToken } from '../provider';
 import { ChatNotificationProvider } from './interfaces/notification';
 import { ApiTags } from '@nestjs/swagger';
+import { ServiceTokenGuard } from '../app/auth/auth.guard';
 
 // @TODO: add JWT & recommender bot guard
 @UseGuards(ServiceTokenGuard)

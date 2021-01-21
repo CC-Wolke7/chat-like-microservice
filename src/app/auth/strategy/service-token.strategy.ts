@@ -6,14 +6,14 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthStrategyName } from '../../strategy';
-import { UserType } from '../../interfaces/user';
-import { ServiceAccount } from '../../interfaces/service-account';
+import { AuthStrategyName } from '../strategy';
+import { UserType } from '../interfaces/user';
+import { ServiceAccount } from '../interfaces/service-account';
 import {
   ServiceAccountConfig,
   ServiceAccountConfigProvider,
-} from '../../../config/namespace/service-account.config';
-import { AppException } from '../../../app.exception';
+} from '../../config/namespace/service-account.config';
+import { AppException } from '../../app.exception';
 
 @Injectable()
 export class ServiceTokenStrategy extends PassportStrategy(

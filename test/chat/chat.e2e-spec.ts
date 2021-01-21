@@ -7,7 +7,6 @@ import {
 } from '../../src/chat/chat.dto';
 import { PublicChat, PublicChatMessage } from './interfaces/chat';
 import { equalSet, isValidUUID } from '../../src/util/helper';
-import { ServiceTokenGuard } from '../../src/app/auth/strategy/service-token/service-token.guard';
 import { AuthGuardMock } from '../../src/app/auth/__mocks__/auth.guard';
 import {
   ServiceAccountName,
@@ -19,6 +18,7 @@ import { isValidISODateString } from 'iso-datestring-validator';
 import { RootModule } from '../../src/root.module';
 import { Plugin } from '../../src/plugins';
 import { ChatStorageProviderType } from '../../src/chat/chat.storage';
+import { ServiceTokenGuard } from '../../src/app/auth/auth.guard';
 
 describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties

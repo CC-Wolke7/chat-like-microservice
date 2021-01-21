@@ -26,7 +26,7 @@ import { ChatException } from '../chat.exception';
 import { HttpAdapterHost } from '@nestjs/core';
 import * as http from 'http';
 import { AuthenticatedWsGateway } from '../../util/AuthenticatedWsGateway';
-import { ServiceTokenStrategy } from '../../app/auth/strategy/service-token/service-token.strategy';
+import { ServiceTokenStrategy } from '../../app/auth/strategy/service-token.strategy';
 import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ChatGatewayExceptionFilter } from './chat.gateway.filter';
 import { BrokerMessage, MessageBrokerProvider } from './interfaces/broker';

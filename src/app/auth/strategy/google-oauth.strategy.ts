@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import * as jwksRsa from 'jwks-rsa';
 import { ExtractJwt, Strategy, StrategyOptions } from 'passport-jwt';
-import { AuthenticatedUser, UserType } from '../../interfaces/user';
-import { AuthStrategyName } from '../../strategy';
+import { AuthenticatedUser, UserType } from '../interfaces/user';
+import { AuthStrategyName } from '../strategy';
 
 interface GoogleOAuthIdTokenPayload {
   iss: string; // issuer

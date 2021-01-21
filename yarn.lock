@@ -1360,6 +1360,13 @@
     "@typescript-eslint/types" "4.14.0"
     eslint-visitor-keys "^2.0.0"
 
+"@voxpelli/passport-dummy@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@voxpelli/passport-dummy/-/passport-dummy-1.0.0.tgz#6bcbc40df56f495f04cc24a996744225e2572abe"
+  integrity sha512-Rtj0heThJun+Ts77rz3HnGp7eEnorNI2rZQutHLIymWxCCD5jnbkDPGns9i09NoViKB7a1B9RJANfYyPnBwurg==
+  dependencies:
+    passport-strategy "^1.0.0"
+
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.9.0.tgz#bd850604b4042459a5a41cd7d338cbed695ed964"
@@ -5497,13 +5504,6 @@ pascalcase@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/pascalcase/-/pascalcase-0.1.1.tgz#b363e55e8006ca6fe21784d2db22bd15d7917f14"
   integrity sha1-s2PlXoAGym/iF4TS2yK9FdeRfxQ=
-
-passport-anonymous@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/passport-anonymous/-/passport-anonymous-1.0.1.tgz#241e37274ec44dfb7f6cad234b41c438386bc117"
-  integrity sha1-JB43J07ETft/bK0jS0HEODhrwRc=
-  dependencies:
-    passport-strategy "1.x.x"
 
 passport-http-bearer@^1.0.1:
   version "1.0.1"

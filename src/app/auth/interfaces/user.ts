@@ -20,4 +20,5 @@ export interface AuthenticatedUser extends BaseUser {
   uuid: UserUUID;
 }
 
-export type UserEntity = AnonymousUser | ServiceAccount | AuthenticatedUser;
+export type AuthenticatedUserEntity = ServiceAccount | AuthenticatedUser;
+export type UserEntity = AnonymousUser | AuthenticatedUserEntity;

@@ -7,8 +7,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ServiceTokenGuard } from '../app/auth/auth.guard';
 import { AuthenticatedUser } from '../app/auth/interfaces/user';
-import { ServiceTokenGuard } from '../app/auth/strategy/service-token/service-token.guard';
 import { User } from '../app/auth/user.decorator';
 import { OfferUUID } from './interfaces/storage';
 import { GetOfferLikesResponse } from './like.dto';

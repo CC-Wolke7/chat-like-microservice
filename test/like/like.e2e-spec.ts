@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { ServiceTokenGuard } from '../../src/app/auth/strategy/service-token/service-token.guard';
 import { AuthGuardMock } from '../../src/app/auth/__mocks__/auth.guard';
 import {
   ServiceAccountName,
@@ -20,6 +19,7 @@ import {
 } from '../util/helper';
 import { Plugin } from '../../src/plugins';
 import { LikeStorageProviderType } from '../../src/like/like.storage';
+import { ServiceTokenGuard } from '../../src/app/auth/auth.guard';
 
 describe('LikeController (e2e) [authenticated]', () => {
   // MARK: - Properties

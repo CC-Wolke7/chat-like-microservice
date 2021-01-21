@@ -4,9 +4,16 @@ import * as request from 'supertest';
 import { RootModule } from '../../src/root.module';
 import { HealthStatus } from '../../src/app/interfaces/health';
 import {
+  AnonymousUser,
   AuthenticatedUser,
   UserType,
 } from '../../src/app/auth/interfaces/user';
+import { ServiceAccount } from '../../src/app/auth/interfaces/service-account';
+import { ServiceAccountConfig } from '../../src/app/config/namespace/service-account.config';
+import {
+  GENERIC_SERVICE_TOKEN,
+  TEST_SERVICE_ACCOUNT_CONFIG,
+} from '../util/helper';
 
 describe('AppController (e2e)', () => {
   // MARK: - Properties
@@ -22,7 +29,10 @@ describe('AppController (e2e)', () => {
       imports: [
         RootModule.register({ plugins: new Set([]), optionsForPlugin: {} }),
       ],
-    }).compile();
+    })
+      .overrideProvider(ServiceAccountConfig.KEY)
+      .useValue(TEST_SERVICE_ACCOUNT_CONFIG)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -36,8 +46,29 @@ describe('AppController (e2e)', () => {
       .expect({ status: HealthStatus.Normal });
   });
 
-  it('/identity (GET) - fails if not authenticated', () => {
-    return request(app.getHttpServer()).get('/identity').expect(401);
+  it('/identity (GET) - should succeed if not authenticated', async () => {
+    const identity: AnonymousUser = (
+      await request(app.getHttpServer()).get('/identity').expect(200)
+    ).body;
+
+    expect(identity.type).toEqual(UserType.Anonymous);
+  });
+
+  it('/identity (GET) - should succeed if authenticated through service token', async () => {
+    const identity: ServiceAccount = (
+      await request(app.getHttpServer())
+        .get('/identity')
+        .set('Authorization', `Bearer ${GENERIC_SERVICE_TOKEN}`)
+        .expect(200)
+    ).body;
+
+    expect(identity.type).toEqual(UserType.ServiceAccount);
+    expect(identity.name).toEqual(
+      TEST_SERVICE_ACCOUNT_CONFIG.accountForToken[GENERIC_SERVICE_TOKEN].name,
+    );
+    expect(identity.uuid).toEqual(
+      TEST_SERVICE_ACCOUNT_CONFIG.accountForToken[GENERIC_SERVICE_TOKEN].uuid,
+    );
   });
 
   it('/identity (GET) - should succeed if authenticated through Google OAuth', async () => {
@@ -50,5 +81,23 @@ describe('AppController (e2e)', () => {
 
     expect(identity.type).toEqual(UserType.User);
     expect(identity.uuid).toEqual(GOOGLE_OAUTH_SUB);
+  });
+
+  it('/auth-identity (GET) - should fail if not authenticated', () => {
+    return request(app.getHttpServer()).get('/auth-identity').expect(401);
+  });
+
+  it('/auth-identity (GET) - should succeed if authenticated through service token', () => {
+    return request(app.getHttpServer())
+      .get('/auth-identity')
+      .set('Authorization', `Bearer ${GENERIC_SERVICE_TOKEN}`)
+      .expect(200);
+  });
+
+  it('/auth-identity (GET) - should succeed if authenticated through Google OAuth', () => {
+    return request(app.getHttpServer())
+      .get('/auth-identity')
+      .set('Authorization', `Bearer ${GOOGLE_OAUTH_JWT}`)
+      .expect(200);
   });
 });
