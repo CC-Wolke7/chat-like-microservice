@@ -7,15 +7,25 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ServiceTokenGuard } from '../app/auth/auth.guard';
+import {
+  AndAuthGuard,
+  GoogleOAuthGuard,
+  OrAuthGuard,
+  ServiceAccountUserGuard,
+  ServiceTokenGuard,
+} from '../app/auth/auth.guard';
 import { AuthenticatedUser } from '../app/auth/interfaces/user';
 import { User } from '../app/auth/user.decorator';
 import { OfferUUID } from './interfaces/storage';
 import { GetOfferLikesResponse } from './like.dto';
 import { LikeService } from './like.service';
 
-// @TODO: add JWT guard
-@UseGuards(ServiceTokenGuard)
+@UseGuards(
+  new OrAuthGuard(
+    new AndAuthGuard(new ServiceTokenGuard(), new ServiceAccountUserGuard()),
+    new GoogleOAuthGuard(),
+  ),
+)
 @ApiTags('like')
 @Controller()
 export class LikeController {

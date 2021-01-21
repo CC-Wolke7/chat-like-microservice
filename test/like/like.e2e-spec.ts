@@ -1,35 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AuthGuardMock } from '../../src/app/auth/__mocks__/auth.guard';
-import {
-  ServiceAccountName,
-  ServiceAccountUser,
-} from '../../src/app/auth/interfaces/service-account';
-import { UserType } from '../../src/app/auth/interfaces/user';
 import { RootModule } from '../../src/root.module';
 import { PublicOfferLikes } from './interfaces/like';
 import { Vote } from '../../src/like/interfaces/storage';
 import { ServiceAccountConfig } from '../../src/app/config/namespace/service-account.config';
 import {
   CREATOR_SERVICE_TOKEN,
+  GENERIC_SERVICE_ACCOUNT_USER_TOKEN,
   NON_PARTICIPANT_SERVICE_TOKEN,
   PARTICIPANT_SERVICE_TOKEN,
   TEST_SERVICE_ACCOUNT_CONFIG,
 } from '../util/helper';
 import { Plugin } from '../../src/plugins';
 import { LikeStorageProviderType } from '../../src/like/like.storage';
-import { ServiceTokenGuard } from '../../src/app/auth/auth.guard';
 
 describe('LikeController (e2e) [authenticated]', () => {
   // MARK: - Properties
   let app: INestApplication;
-
-  const user: ServiceAccountUser = {
-    type: UserType.ServiceAccount,
-    name: ServiceAccountName.UnitTest,
-    uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
-  };
 
   // MARK: - Hooks
   beforeEach(async () => {
@@ -43,8 +31,8 @@ describe('LikeController (e2e) [authenticated]', () => {
         }),
       ],
     })
-      .overrideGuard(ServiceTokenGuard)
-      .useValue(new AuthGuardMock(user))
+      .overrideProvider(ServiceAccountConfig.KEY)
+      .useValue(TEST_SERVICE_ACCOUNT_CONFIG)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -53,13 +41,17 @@ describe('LikeController (e2e) [authenticated]', () => {
 
   // MARK: - Tests
   it('/offer/:offerId/likes (GET) - fails if `offerId` is not a UUID', () => {
-    return request(app.getHttpServer()).get('/offer/offer-1/likes').expect(400);
+    return request(app.getHttpServer())
+      .get('/offer/offer-1/likes')
+      .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
+      .expect(400);
   });
 
   it('/offer/:offerId/likes (GET) - succeeds if `offerId` is a UUID and returns total of `0` likes and no user like if offer has not been touched', async () => {
     const likes = (
       await request(app.getHttpServer())
         .get('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+        .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
         .expect(200)
     ).body as PublicOfferLikes;
 
@@ -68,17 +60,22 @@ describe('LikeController (e2e) [authenticated]', () => {
   });
 
   it('/offer/:offerId/likes (PUT) - fails if `offerId` is not a UUID', () => {
-    return request(app.getHttpServer()).put('/offer/offer-1/likes').expect(400);
+    return request(app.getHttpServer())
+      .put('/offer/offer-1/likes')
+      .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
+      .expect(400);
   });
 
   it('/offer/:offerId/likes (PUT) - succeeds if `offerId` is a UUID and sets the total and user likes to `1`', async () => {
     await request(app.getHttpServer())
       .put('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+      .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
       .expect(200);
 
     const likes = (
       await request(app.getHttpServer())
         .get('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+        .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
         .expect(200)
     ).body as PublicOfferLikes;
 
@@ -90,11 +87,13 @@ describe('LikeController (e2e) [authenticated]', () => {
   it("/offer/:offerId/likes (PUT) - toggles a user's like", async () => {
     await request(app.getHttpServer())
       .put('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+      .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
       .expect(200);
 
     const likesAfterFirstToggle = (
       await request(app.getHttpServer())
         .get('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+        .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
         .expect(200)
     ).body as PublicOfferLikes;
 
@@ -103,11 +102,13 @@ describe('LikeController (e2e) [authenticated]', () => {
 
     await request(app.getHttpServer())
       .put('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+      .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
       .expect(200);
 
     const likesAfterSecondToggle = (
       await request(app.getHttpServer())
         .get('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+        .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
         .expect(200)
     ).body as PublicOfferLikes;
 
@@ -116,11 +117,13 @@ describe('LikeController (e2e) [authenticated]', () => {
 
     await request(app.getHttpServer())
       .put('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+      .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
       .expect(200);
 
     const likesAfterThirdToggle = (
       await request(app.getHttpServer())
         .get('/offer/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/likes')
+        .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_USER_TOKEN}`)
         .expect(200)
     ).body as PublicOfferLikes;
 

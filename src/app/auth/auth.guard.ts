@@ -27,6 +27,17 @@ export class GoogleOAuthGuard extends AuthGuard(AuthStrategyName.GoogleOAuth) {}
 
 // Authorization
 @Injectable()
+export class ServiceAccountUserGuard implements CanActivate {
+  // MARK: - Public Methods
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    const serviceAccount = request.user as ServiceAccount;
+
+    return serviceAccount.uuid !== undefined;
+  }
+}
+
+@Injectable()
 export class RecommenderBotGuard implements CanActivate {
   // MARK: - Public Methods
   canActivate(context: ExecutionContext): boolean {
@@ -38,6 +49,7 @@ export class RecommenderBotGuard implements CanActivate {
 }
 
 // Helper
+// https://github.com/nestjs/nest/issues/873
 abstract class ComposeGuard implements CanActivate {
   // MARK: - Private Properties
   protected readonly guards: CanActivate[];

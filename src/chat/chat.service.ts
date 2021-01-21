@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { assert } from 'console';
-import { RecommenderBot } from '../app/auth/interfaces/service-account';
+import { ServiceAccountUser } from '../app/auth/interfaces/service-account';
 import { AuthenticatedUser } from '../app/auth/interfaces/user';
 import { ProviderToken } from '../provider';
 import { ChatException } from './chat.exception';
@@ -16,6 +16,8 @@ import {
   ChatUUID,
   ChatMessageModel,
 } from './interfaces/storage';
+
+export type ChatServiceUser = AuthenticatedUser | ServiceAccountUser;
 
 @Injectable()
 export class ChatService {
@@ -45,7 +47,7 @@ export class ChatService {
   }
 
   async createChat(
-    creator: AuthenticatedUser | RecommenderBot,
+    creator: ChatServiceUser,
     participants: Set<UserUUID>,
   ): Promise<ChatModel> {
     const allParticipants = participants.add(creator.uuid);
@@ -75,7 +77,7 @@ export class ChatService {
 
   async createMessage(
     chat: ChatUUID,
-    sender: AuthenticatedUser | RecommenderBot,
+    sender: ChatServiceUser,
     body: string,
   ): Promise<ChatMessageModel> {
     const message = await this.storage.createMessage({

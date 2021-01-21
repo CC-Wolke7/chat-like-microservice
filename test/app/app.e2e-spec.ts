@@ -11,7 +11,7 @@ import {
 import { ServiceAccount } from '../../src/app/auth/interfaces/service-account';
 import { ServiceAccountConfig } from '../../src/app/config/namespace/service-account.config';
 import {
-  GENERIC_SERVICE_TOKEN,
+  GENERIC_SERVICE_ACCOUNT_TOKEN,
   TEST_SERVICE_ACCOUNT_CONFIG,
 } from '../util/helper';
 
@@ -58,16 +58,18 @@ describe('AppController (e2e)', () => {
     const identity: ServiceAccount = (
       await request(app.getHttpServer())
         .get('/identity')
-        .set('Authorization', `Bearer ${GENERIC_SERVICE_TOKEN}`)
+        .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_TOKEN}`)
         .expect(200)
     ).body;
 
     expect(identity.type).toEqual(UserType.ServiceAccount);
     expect(identity.name).toEqual(
-      TEST_SERVICE_ACCOUNT_CONFIG.accountForToken[GENERIC_SERVICE_TOKEN].name,
+      TEST_SERVICE_ACCOUNT_CONFIG.accountForToken[GENERIC_SERVICE_ACCOUNT_TOKEN]
+        .name,
     );
     expect(identity.uuid).toEqual(
-      TEST_SERVICE_ACCOUNT_CONFIG.accountForToken[GENERIC_SERVICE_TOKEN].uuid,
+      TEST_SERVICE_ACCOUNT_CONFIG.accountForToken[GENERIC_SERVICE_ACCOUNT_TOKEN]
+        .uuid,
     );
   });
 
@@ -90,7 +92,7 @@ describe('AppController (e2e)', () => {
   it('/auth-identity (GET) - should succeed if authenticated through service token', () => {
     return request(app.getHttpServer())
       .get('/auth-identity')
-      .set('Authorization', `Bearer ${GENERIC_SERVICE_TOKEN}`)
+      .set('Authorization', `Bearer ${GENERIC_SERVICE_ACCOUNT_TOKEN}`)
       .expect(200);
   });
 

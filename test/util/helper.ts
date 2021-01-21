@@ -13,8 +13,13 @@ import { ChatStorageProviderType } from '../../src/chat/chat.storage';
 import { ChatConfig } from '../../src/app/config/namespace/chat.config';
 
 // Service Accounts Config
-export const GENERIC_SERVICE_TOKEN =
+export const GENERIC_SERVICE_ACCOUNT_TOKEN =
   'NzYxMjg5NDEwNmNkNGYyN2M2MGRlNDM1N2VmMjJkZDEK';
+export const GENERIC_SERVICE_ACCOUNT_USER_TOKEN =
+  'NDc2MmViYjU5YjcwODkyMzAxZjBlMTJjYzcxY2NlMWIK';
+export const RECOMMENDER_BOT_TOKEN =
+  'ZjYxMjczN2ZlZTkxMDhiZWM5ZjgxYWQwNTI3N2VlOGMK';
+
 export const CREATOR_SERVICE_TOKEN =
   'MWZhMzExZDhkOGM1ZWI0ODBmYmQ5YWQyYTdkMzNmNmUK';
 export const PARTICIPANT_SERVICE_TOKEN =
@@ -24,14 +29,24 @@ export const NON_PARTICIPANT_SERVICE_TOKEN =
 
 export const TEST_SERVICE_ACCOUNT_CONFIG: ServiceAccountConfigProvider = {
   tokenWhitelist: [
-    GENERIC_SERVICE_TOKEN,
+    GENERIC_SERVICE_ACCOUNT_TOKEN,
+    GENERIC_SERVICE_ACCOUNT_USER_TOKEN,
+    RECOMMENDER_BOT_TOKEN,
     CREATOR_SERVICE_TOKEN,
     PARTICIPANT_SERVICE_TOKEN,
     NON_PARTICIPANT_SERVICE_TOKEN,
   ],
   accountForToken: {
-    [GENERIC_SERVICE_TOKEN]: {
+    [GENERIC_SERVICE_ACCOUNT_TOKEN]: {
       name: ServiceAccountName.UnitTest,
+    },
+    [GENERIC_SERVICE_ACCOUNT_USER_TOKEN]: {
+      name: ServiceAccountName.UnitTest,
+      uuid: 'f66d0a46-49c4-43dd-a122-8d32d87b3eed',
+    },
+    [RECOMMENDER_BOT_TOKEN]: {
+      name: ServiceAccountName.RecommenderBot,
+      uuid: '5a994e8e-7dbe-4a61-9a21-b0f45d1bffbd',
     },
     [CREATOR_SERVICE_TOKEN]: {
       name: ServiceAccountName.UnitTest,

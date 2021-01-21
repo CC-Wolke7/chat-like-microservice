@@ -7,7 +7,6 @@ import {
 } from '../../src/chat/chat.dto';
 import { PublicChat, PublicChatMessage } from './interfaces/chat';
 import { equalSet, isValidUUID } from '../../src/util/helper';
-import { AuthGuardMock } from '../../src/app/auth/__mocks__/auth.guard';
 import {
   ServiceAccountName,
   ServiceAccountUser,
@@ -18,7 +17,11 @@ import { isValidISODateString } from 'iso-datestring-validator';
 import { RootModule } from '../../src/root.module';
 import { Plugin } from '../../src/plugins';
 import { ChatStorageProviderType } from '../../src/chat/chat.storage';
-import { ServiceTokenGuard } from '../../src/app/auth/auth.guard';
+import { ServiceAccountConfig } from '../../src/app/config/namespace/service-account.config';
+import {
+  RECOMMENDER_BOT_TOKEN,
+  TEST_SERVICE_ACCOUNT_CONFIG,
+} from '../util/helper';
 
 describe('ChatController (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -44,8 +47,8 @@ describe('ChatController (e2e) [authenticated]', () => {
         }),
       ],
     })
-      .overrideGuard(ServiceTokenGuard)
-      .useValue(new AuthGuardMock(user))
+      .overrideProvider(ServiceAccountConfig.KEY)
+      .useValue(TEST_SERVICE_ACCOUNT_CONFIG)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -54,7 +57,10 @@ describe('ChatController (e2e) [authenticated]', () => {
 
   // MARK: - Tests
   it('/chats (POST) - fails if no payload is supplied', () => {
-    return request(app.getHttpServer()).post('/chats').expect(400);
+    return request(app.getHttpServer())
+      .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
+      .expect(400);
   });
 
   it('/chats (POST) - fails if `participants` is not a list', () => {
@@ -64,6 +70,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     return request(app.getHttpServer())
       .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(payload)
       .expect(400);
   });
@@ -75,6 +82,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     return request(app.getHttpServer())
       .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(payload)
       .expect(400);
   });
@@ -86,6 +94,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     return request(app.getHttpServer())
       .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(payload)
       .expect(400);
   });
@@ -100,6 +109,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     return request(app.getHttpServer())
       .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(payload)
       .expect(400);
   });
@@ -116,6 +126,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     const chat = (
       await request(app.getHttpServer())
         .post('/chats')
+        .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
         .send(payload)
         .expect(201)
     ).body as PublicChat;
@@ -143,6 +154,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     // Returns newly created chat in list of chats
     return request(app.getHttpServer())
       .get('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .expect(200)
       .expect([chat]);
   });
@@ -159,6 +171,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     const chat = (
       await request(app.getHttpServer())
         .post('/chats')
+        .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
         .send(payload)
         .expect(201)
     ).body as PublicChat;
@@ -184,10 +197,15 @@ describe('ChatController (e2e) [authenticated]', () => {
       ],
     };
 
-    await request(app.getHttpServer()).post('/chats').send(payload).expect(201);
+    await request(app.getHttpServer())
+      .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
+      .send(payload)
+      .expect(201);
 
     return request(app.getHttpServer())
       .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(payload)
       .expect(409);
   });
@@ -202,6 +220,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     await request(app.getHttpServer())
       .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(createFirstChatPayload)
       .expect(201);
 
@@ -215,12 +234,17 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     await request(app.getHttpServer())
       .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(createSecondChatPayload)
       .expect(201);
 
     // Returns all chats if no query is specified
-    const chats = (await request(app.getHttpServer()).get('/chats').expect(200))
-      .body as PublicChat[];
+    const chats = (
+      await request(app.getHttpServer())
+        .get('/chats')
+        .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
+        .expect(200)
+    ).body as PublicChat[];
 
     expect(chats.length).toEqual(2);
 
@@ -229,6 +253,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     const firstQueryResult = (
       await request(app.getHttpServer())
         .get('/chats')
+        .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
         .query(
           qs.stringify(
             {
@@ -247,6 +272,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     const secondQueryResult = (
       await request(app.getHttpServer())
         .get('/chats')
+        .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
         .query(
           qs.stringify(
             {
@@ -267,12 +293,14 @@ describe('ChatController (e2e) [authenticated]', () => {
   it('/chat/:chatId/messages (GET) - fails if `chatId` is not a UUID', () => {
     return request(app.getHttpServer())
       .get('/chat/chat-1/messages')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .expect(400);
   });
 
   it('/chat/:chatId/messages (GET) - fails if chat with `chatId` does not exist', () => {
     return request(app.getHttpServer())
       .get('/chat/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/messages')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .expect(404);
   });
 
@@ -286,6 +314,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     const createChatResponse = await request(app.getHttpServer())
       .post('/chats')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(payload)
       .expect(201);
 
@@ -293,6 +322,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     return request(app.getHttpServer())
       .get(`/chat/${chat.uuid}/messages`)
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .expect(200)
       .expect([]);
   });
@@ -300,12 +330,14 @@ describe('ChatController (e2e) [authenticated]', () => {
   it('/chat/:chatId/messages (POST) - fails if `chatId` is not a UUID', () => {
     return request(app.getHttpServer())
       .post('/chat/chat-1/messages')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .expect(400);
   });
 
   it('/chat/:chatId/messages (POST) - fails if no payload is supplied', () => {
     return request(app.getHttpServer())
       .post('/chat/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/messages')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .expect(400);
   });
 
@@ -316,6 +348,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     return request(app.getHttpServer())
       .post('/chat/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/messages')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(payload)
       .expect(400);
   });
@@ -327,6 +360,7 @@ describe('ChatController (e2e) [authenticated]', () => {
 
     return request(app.getHttpServer())
       .post('/chat/a35fe77b-7d4f-4da2-8d5d-271cf9d82fee/messages')
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .send(payload)
       .expect(404);
   });
@@ -342,6 +376,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     const chat = (
       await request(app.getHttpServer())
         .post('/chats')
+        .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
         .send(createChatPayload)
         .expect(201)
     ).body as PublicChat;
@@ -354,6 +389,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     const message = (
       await request(app.getHttpServer())
         .post(`/chat/${chat.uuid}/messages`)
+        .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
         .send(createMessagePayload)
         .expect(201)
     ).body as PublicChatMessage;
@@ -373,6 +409,7 @@ describe('ChatController (e2e) [authenticated]', () => {
     // Returns newly created message in list of messages for chat
     return request(app.getHttpServer())
       .get(`/chat/${chat.uuid}/messages`)
+      .set('Authorization', `Bearer ${RECOMMENDER_BOT_TOKEN}`)
       .expect(200)
       .expect([message]);
   });
