@@ -5,7 +5,7 @@ import {
   ChatModel,
   ChatPrototype,
 } from '../../interfaces/storage';
-import { equalSet } from '../../../util/helper';
+import { equalSet, isValidUUID } from '../../../util/helper';
 import { ConfigModule } from '../../../app/config/config.module';
 
 describe('FirestoreChatStorage', () => {
@@ -48,7 +48,7 @@ describe('FirestoreChatStorage', () => {
     expect(keys.length).toEqual(expectedKeys.length);
     expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
 
-    expect(chat.uuid).toEqual(expect.any(String));
+    expect(isValidUUID(chat.uuid, 4)).toBeTruthy();
     expect(chat.creator).toEqual(createChatPayload.creator);
     expect(chat.participants).toEqual(createChatPayload.participants);
 
@@ -86,7 +86,7 @@ describe('FirestoreChatStorage', () => {
     expect(keys.length).toEqual(expectedKeys.length);
     expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
 
-    expect(message.uuid).toEqual(expect.any(String));
+    expect(isValidUUID(message.uuid, 4)).toBeTruthy();
     expect(message.chat).toEqual(createMessagePayload.chat);
     expect(message.sender).toEqual(createMessagePayload.sender);
     expect(message.date).toEqual(createMessagePayload.date);

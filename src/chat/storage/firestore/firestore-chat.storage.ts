@@ -20,6 +20,7 @@ import {
   ChatConfig,
   ChatConfigProvider,
 } from '../../../app/config/namespace/chat.config';
+import { v4 as uuidv4 } from 'uuid';
 
 export type FirestoreChatModel = Omit<ChatModel, 'uuid'> & {
   participantsHash: string;
@@ -90,11 +91,12 @@ export class FirestoreChatStorage implements ChatStorageProvider {
       ),
     };
 
-    const chatDocumentRef = await this.chats.add(model);
+    const chatId = uuidv4();
+    await this.chats.doc(chatId).set(model);
 
     return {
       ...prototype,
-      uuid: chatDocumentRef.id,
+      uuid: chatId,
     };
   }
 
@@ -141,11 +143,12 @@ export class FirestoreChatStorage implements ChatStorageProvider {
       ...prototype,
     };
 
-    const messageDocumentRef = await this.messages.add(model);
+    const messageId = uuidv4();
+    await this.messages.doc(messageId).set(model);
 
     return {
       ...prototype,
-      uuid: messageDocumentRef.id,
+      uuid: messageId,
     };
   }
 
