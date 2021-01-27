@@ -1,14 +1,17 @@
-import { plainToClass, Transform } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import {
   ArrayUnique,
   IsArray,
+  IsBooleanString,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
+  IsUrl,
   IsUUID,
   validateSync,
 } from 'class-validator';
+import { TransformToStringArray } from '../../../test/util/decorator';
 import { ChatStorageProviderType } from '../../chat/chat.storage';
 import { LikeStorageProviderType } from '../../like/like.storage';
 import { Plugin } from '../../plugins';
@@ -16,7 +19,7 @@ import { Plugin } from '../../plugins';
 export class Environment {
   // Core Config
   @IsOptional()
-  @Transform((value: string) => value.split(',')) // must be applied again upon usage
+  @TransformToStringArray() // must be applied again upon usage
   @IsArray()
   @ArrayUnique()
   @IsEnum(Plugin, { each: true })
@@ -25,6 +28,17 @@ export class Environment {
   @IsOptional()
   @IsString()
   readonly GCP_PROJECT_ID?: string;
+
+  @IsOptional()
+  @TransformToStringArray() // must be applied again upon usage
+  @IsArray()
+  @ArrayUnique()
+  @IsUrl({ require_host: true, require_valid_protocol: true }, { each: true })
+  readonly CORS_ORIGIN_WHITELIST?: string;
+
+  @IsOptional()
+  @IsBooleanString()
+  readonly CORS_ALLOW_CREDENTIALS?: string;
 
   // Service Account Config
   @IsOptional()

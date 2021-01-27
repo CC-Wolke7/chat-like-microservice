@@ -8,3 +8,9 @@ export function TransformToBoolean(): (target: any, key: any) => void {
     return value;
   });
 }
+
+export function TransformToStringArray(): (target: any, key: any) => void {
+  return Transform((value) => {
+    return value.split(',');
+  });
+}

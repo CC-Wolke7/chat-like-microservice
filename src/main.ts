@@ -11,8 +11,7 @@ import { RootModule } from './root.module';
 
 async function bootstrap(): Promise<void> {
   // @TODO: configure CSRF (origin whitelist) - https://docs.nestjs.com/security/csrf
-  // @TODO: configure CORS (trusted origins) (- https://docs.nestjs.com/security/cors
-  const { plugins } = CoreConfig();
+  const { plugins, cors: corsOptions } = CoreConfig();
   const { storage: chatStorage } = ChatConfig();
   const { storage: likeStorage } = LikeConfig();
 
@@ -34,6 +33,7 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
+  app.enableCors(corsOptions);
   app.useWebSocketAdapter(new WsAdapter(app));
   setupDocs(app, plugins);
   await app.listen(3000);

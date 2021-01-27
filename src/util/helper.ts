@@ -17,3 +17,11 @@ export function equalSet<T>(setA: Set<T>, setB: Set<T>): boolean {
 export function isValidUUID(input: string, version: number): boolean {
   return uuid.validate(input) && uuid.version(input) === version;
 }
+
+export function toArray<T = string>(string: string): T[] {
+  return (string.split(',') as unknown) as T[];
+}
+
+export function toSet<T = string>(string: string): Set<T> {
+  return new Set(toArray(string));
+}
