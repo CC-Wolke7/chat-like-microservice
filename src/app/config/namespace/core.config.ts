@@ -17,6 +17,7 @@ export const CoreConfig = registerAs(
   ConfigNamespace.Core,
   (): CoreConfigProvider => {
     const environment = (process.env as unknown) as Environment;
+
     const {
       PLUGINS,
       GCP_PROJECT_ID,
@@ -30,7 +31,7 @@ export const CoreConfig = registerAs(
         projectId: GCP_PROJECT_ID,
       },
       cors: {
-        origin: CORS_ORIGIN_WHITELIST ? toArray(CORS_ORIGIN_WHITELIST) : '*',
+        origin: CORS_ORIGIN_WHITELIST ? toArray(CORS_ORIGIN_WHITELIST) : [],
         credentials: CORS_ALLOW_CREDENTIALS
           ? Boolean(CORS_ALLOW_CREDENTIALS)
           : true,

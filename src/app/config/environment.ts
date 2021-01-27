@@ -7,7 +7,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   IsUUID,
   validateSync,
 } from 'class-validator';
@@ -15,8 +14,13 @@ import { TransformToStringArray } from '../../../test/util/decorator';
 import { ChatStorageProviderType } from '../../chat/chat.storage';
 import { LikeStorageProviderType } from '../../like/like.storage';
 import { Plugin } from '../../plugins';
+import { Stage } from './stage';
 
 export class Environment {
+  // Global
+  @IsEnum(Stage)
+  readonly NODE_ENV: Stage;
+
   // Core Config
   @IsOptional()
   @TransformToStringArray() // must be applied again upon usage
@@ -33,7 +37,6 @@ export class Environment {
   @TransformToStringArray() // must be applied again upon usage
   @IsArray()
   @ArrayUnique()
-  @IsUrl({ require_host: true, require_valid_protocol: true }, { each: true })
   readonly CORS_ORIGIN_WHITELIST?: string;
 
   @IsOptional()

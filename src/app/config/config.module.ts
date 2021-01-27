@@ -15,13 +15,13 @@ function getEnvFiles(): string[] {
 
   switch (process.env.NODE_ENV) {
     case 'production':
-      files.push(...['.env.production']);
+      files.push(...['env/.env.production']);
       break;
     case 'development':
-      files.push(...['.env.development', '.env.development.local']);
+      files.push(...['env/.env.development', 'env/.env.development.local']);
       break;
     case 'test':
-      files.push(...['.env.test']);
+      files.push(...['env/.env.test']);
       break;
     default:
       break;
