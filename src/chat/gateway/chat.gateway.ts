@@ -3,7 +3,6 @@ import {
   WebSocketGateway,
   MessageBody,
   WsResponse,
-  OnGatewayDisconnect,
   WsException,
   ConnectedSocket,
 } from '@nestjs/websockets';
@@ -23,9 +22,6 @@ import {
 import { CreateMessageEventPayload } from './chat.gateway.dto';
 import { ChatService } from '../chat.service';
 import { ChatException } from '../chat.exception';
-import { HttpAdapterHost } from '@nestjs/core';
-import * as http from 'http';
-import { AuthenticatedWsGateway } from '../../util/AuthenticatedWsGateway';
 import { ServiceTokenStrategy } from '../../app/auth/strategy/service-token.strategy';
 import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ChatGatewayExceptionFilter } from './chat.gateway.filter';
@@ -33,12 +29,13 @@ import { BrokerMessage, MessageBrokerProvider } from './interfaces/broker';
 import { ProviderToken } from '../../provider';
 import { promisify } from 'util';
 import { ChatGatewayException } from './chat.gateway.exception';
+import {
+  AuthenticatedWebSocket,
+  AuthenticatedWsGateway,
+} from '../../util/authenticated-ws/authenticated-ws.gateway';
+import { WsAuthRequestPayload } from '../../util/authenticated-ws/authenticated-ws.dto';
 
 type User = ServiceAccountUser;
-
-type AuthenticatedWebSocket = WebSocket & {
-  user: User;
-};
 
 // @TODO: abstract chat rooms - https://github.com/afertil/nest-chat-api
 // @TODO: detect broken/closed connections via ping/pong - https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
@@ -55,25 +52,19 @@ type AuthenticatedWebSocket = WebSocket & {
 @WebSocketGateway()
 export class ChatGateway
   extends AuthenticatedWsGateway<User>
-  implements OnGatewayDisconnect<WebSocket>, ChatNotificationProvider {
+  implements ChatNotificationProvider {
   // MARK: - Private Properties
   private readonly service: ChatService;
   private readonly serviceTokenStrategy: ServiceTokenStrategy;
   private readonly broker: MessageBrokerProvider;
 
-  private readonly socketForUser = new Map<
-    UserUUID,
-    AuthenticatedWebSocket | undefined
-  >();
-
   // MARK: - Initialization
   constructor(
-    adapterHost: HttpAdapterHost,
     service: ChatService,
     serviceTokenStrategy: ServiceTokenStrategy,
     @Inject(ProviderToken.CHAT_BROKER) broker: MessageBrokerProvider,
   ) {
-    super(adapterHost);
+    super();
 
     this.service = service;
     this.serviceTokenStrategy = serviceTokenStrategy;
@@ -84,37 +75,23 @@ export class ChatGateway
 
   // MARK: - Public Methods
   // MARK: AuthenticatedWsGateway
-  async verifyUser(request: http.IncomingMessage): Promise<User | undefined> {
+  async verifyUser(payload: WsAuthRequestPayload): Promise<User | undefined> {
     // @TODO: add JWT & recommender bot guard
-    const bearerToken = request.headers.authorization?.replace('Bearer ', '');
-
-    if (!bearerToken) {
-      return undefined;
+    try {
+      return this.serviceTokenStrategy.validate(
+        payload.token,
+      ) as ServiceAccountUser;
+    } catch {
+      //
     }
 
-    return this.serviceTokenStrategy.validate(
-      bearerToken,
-    ) as ServiceAccountUser;
-  }
-
-  // MARK: Lifecycle
-  handleConnection(
-    socket: AuthenticatedWebSocket,
-    request: http.IncomingMessage,
-    user: User,
-  ): void {
-    socket.user = user;
-    this.socketForUser.set(user.uuid, socket);
-  }
-
-  handleDisconnect(socket: AuthenticatedWebSocket): void {
-    this.socketForUser.delete(socket.user.uuid);
+    return undefined;
   }
 
   // MARK: Event Handler
   @SubscribeMessage(ChatEvent.CreateMessage)
   async createMessage(
-    @ConnectedSocket() socket: AuthenticatedWebSocket,
+    @ConnectedSocket() socket: AuthenticatedWebSocket<User>,
     @MessageBody() payload: CreateMessageEventPayload,
   ): Promise<void> {
     const user = socket.user;
@@ -173,7 +150,7 @@ export class ChatGateway
 
   // MARK: - Private Methods
   private async message(user: UserUUID, payload: WsResponse): Promise<void> {
-    const userSocket = this.socketForUser.get(user);
+    const userSocket = this.socketForAuthenticatedUser.get(user);
 
     if (userSocket === undefined) {
       throw new Error(ChatGatewayException.ParticipantNotConnected);
@@ -230,7 +207,7 @@ export class ChatGateway
 
   private onBrokerMessage(message: BrokerMessage): void {
     const connectedUsers = message.users.filter(
-      (user) => this.socketForUser.get(user) !== undefined,
+      (user) => this.socketForAuthenticatedUser.get(user) !== undefined,
     );
 
     for (const user of connectedUsers) {

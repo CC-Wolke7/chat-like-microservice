@@ -7,8 +7,10 @@ import { CreateMessageEventPayload } from '../../src/chat/gateway/chat.gateway.d
 import { isValidISODateString } from 'iso-datestring-validator';
 import { equalSet } from '../../src/util/helper';
 import {
+  authenticateWebSocket,
   connectToWebsocket,
   CREATOR_SERVICE_TOKEN,
+  INVALID_SERVICE_TOKEN,
   NON_PARTICIPANT_SERVICE_TOKEN,
   PARTICIPANT_SERVICE_TOKEN,
   REDIS_CLIENT_ID_1,
@@ -47,11 +49,7 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
   // MARK: - Tests
   it('should connect', (done) => {
-    const socket = connectToWebsocket(server, {
-      headers: {
-        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
-      },
-    });
+    const socket = connectToWebsocket(server);
 
     sockets.push(socket);
 
@@ -60,34 +58,47 @@ describe('ChatGateway (e2e) [authenticated]', () => {
     });
   });
 
+  it('should fail to authenticate', async (done) => {
+    const socket = connectToWebsocket(server);
+    sockets.push(socket);
+
+    try {
+      await authenticateWebSocket(socket, { token: INVALID_SERVICE_TOKEN });
+    } catch {
+      done();
+    }
+  });
+
+  it('should authenticate', async () => {
+    const socket = connectToWebsocket(server);
+    sockets.push(socket);
+
+    await authenticateWebSocket(socket, { token: CREATOR_SERVICE_TOKEN });
+  });
+
   it('`CREATE_MESSAGE` should fail if `chat` is not a UUID', async () => {
     const createMessageEvent: WsResponse<CreateMessageEventPayload> = {
       event: ChatEvent.CreateMessage,
     } as WsResponse<CreateMessageEventPayload>;
 
-    const socket = connectToWebsocket(server, {
-      headers: {
-        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
-      },
-    });
-
+    const socket = connectToWebsocket(server);
     sockets.push(socket);
 
+    await authenticateWebSocket(socket, { token: CREATOR_SERVICE_TOKEN });
+
     await new Promise<void>((resolve) => {
-      socket.onopen = () => {
-        socket.onmessage = (event) => {
-          const chatEvent = JSON.parse(
-            event.data as any,
-          ) as WsResponse<ChatException>;
+      socket.onmessage = (event) => {
+        const chatEvent = JSON.parse(
+          event.data as any,
+        ) as WsResponse<ChatException>;
 
-          expect(chatEvent.event).toEqual(ChatEvent.ChatError);
-          expect(chatEvent.data).toEqual('Bad Request Exception');
+        expect(chatEvent.event).toEqual(ChatEvent.ChatError);
+        expect(chatEvent.data).toEqual('Bad Request Exception');
 
-          resolve();
-        };
-
-        socket.send(JSON.stringify(createMessageEvent));
+        resolve();
       };
+
+      socket.send(JSON.stringify(createMessageEvent));
     });
   });
 
@@ -102,29 +113,24 @@ describe('ChatGateway (e2e) [authenticated]', () => {
       data: createMessageEventPayload,
     };
 
-    const socket = connectToWebsocket(server, {
-      headers: {
-        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
-      },
-    });
-
+    const socket = connectToWebsocket(server);
     sockets.push(socket);
 
+    await authenticateWebSocket(socket, { token: CREATOR_SERVICE_TOKEN });
+
     await new Promise<void>((resolve) => {
-      socket.onopen = () => {
-        socket.onmessage = (event) => {
-          const chatEvent = JSON.parse(
-            event.data as any,
-          ) as WsResponse<ChatException>;
+      socket.onmessage = (event) => {
+        const chatEvent = JSON.parse(
+          event.data as any,
+        ) as WsResponse<ChatException>;
 
-          expect(chatEvent.event).toEqual(ChatEvent.ChatError);
-          expect(chatEvent.data).toEqual('Bad Request Exception');
+        expect(chatEvent.event).toEqual(ChatEvent.ChatError);
+        expect(chatEvent.data).toEqual('Bad Request Exception');
 
-          resolve();
-        };
-
-        socket.send(JSON.stringify(createMessageEvent));
+        resolve();
       };
+
+      socket.send(JSON.stringify(createMessageEvent));
     });
   });
 
@@ -139,29 +145,24 @@ describe('ChatGateway (e2e) [authenticated]', () => {
       data: createMessageEventPayload,
     };
 
-    const socket = connectToWebsocket(server, {
-      headers: {
-        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
-      },
-    });
-
+    const socket = connectToWebsocket(server);
     sockets.push(socket);
 
+    await authenticateWebSocket(socket, { token: CREATOR_SERVICE_TOKEN });
+
     await new Promise<void>((resolve) => {
-      socket.onopen = () => {
-        socket.onmessage = (event) => {
-          const chatEvent = JSON.parse(
-            event.data as any,
-          ) as WsResponse<ChatException>;
+      socket.onmessage = (event) => {
+        const chatEvent = JSON.parse(
+          event.data as any,
+        ) as WsResponse<ChatException>;
 
-          expect(chatEvent.event).toEqual(ChatEvent.ChatError);
-          expect(chatEvent.data).toEqual('Bad Request Exception');
+        expect(chatEvent.event).toEqual(ChatEvent.ChatError);
+        expect(chatEvent.data).toEqual('Bad Request Exception');
 
-          resolve();
-        };
-
-        socket.send(JSON.stringify(createMessageEvent));
+        resolve();
       };
+
+      socket.send(JSON.stringify(createMessageEvent));
     });
   });
 
@@ -176,29 +177,26 @@ describe('ChatGateway (e2e) [authenticated]', () => {
       data: createMessageEventPayload,
     };
 
-    const creatorSocket = connectToWebsocket(server, {
-      headers: {
-        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
-      },
-    });
-
+    const creatorSocket = connectToWebsocket(server);
     sockets.push(creatorSocket);
 
+    await authenticateWebSocket(creatorSocket, {
+      token: CREATOR_SERVICE_TOKEN,
+    });
+
     await new Promise<void>((resolve) => {
-      creatorSocket.onopen = () => {
-        creatorSocket.onmessage = (event) => {
-          const chatEvent = JSON.parse(
-            event.data as any,
-          ) as WsResponse<ChatException>;
+      creatorSocket.onmessage = (event) => {
+        const chatEvent = JSON.parse(
+          event.data as any,
+        ) as WsResponse<ChatException>;
 
-          expect(chatEvent.event).toEqual(ChatEvent.ChatError);
-          expect(chatEvent.data).toEqual(ChatException.ChatNotFound);
+        expect(chatEvent.event).toEqual(ChatEvent.ChatError);
+        expect(chatEvent.data).toEqual(ChatException.ChatNotFound);
 
-          resolve();
-        };
-
-        creatorSocket.send(JSON.stringify(createMessageEvent));
+        resolve();
       };
+
+      creatorSocket.send(JSON.stringify(createMessageEvent));
     });
   });
 
@@ -233,86 +231,73 @@ describe('ChatGateway (e2e) [authenticated]', () => {
 
     let message: PublicChatMessage;
 
-    // Notifies creator
-    const creatorSocket = connectToWebsocket(server, {
-      headers: {
-        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
-      },
-    });
-
+    // Sockets
+    const creatorSocket = connectToWebsocket(server);
     sockets.push(creatorSocket);
-
-    const creatorNotification = new Promise<void>((resolve) => {
-      creatorSocket.onopen = () => {
-        creatorSocket.onmessage = (event) => {
-          const chatEvent = JSON.parse(
-            event.data as any,
-          ) as WsResponse<PublicChatMessage>;
-
-          const keys = Object.keys(chatEvent.data);
-          const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
-
-          expect(keys.length).toEqual(expectedKeys.length);
-          expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
-
-          expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
-          expect(chatEvent.data.chat).toEqual(chat.uuid);
-          expect(chatEvent.data.sender).toEqual(chatCreator.uuid);
-          expect(isValidISODateString(chatEvent.data.date)).toBeTruthy();
-          expect(chatEvent.data.body).toEqual(
-            createMessageEventPayload.message,
-          );
-
-          message = chatEvent.data;
-
-          resolve();
-        };
-
-        creatorSocket.send(JSON.stringify(createMessageEvent));
-      };
+    await authenticateWebSocket(creatorSocket, {
+      token: CREATOR_SERVICE_TOKEN,
     });
 
-    // Notifies other participant
-    const participantSocket = connectToWebsocket(server, {
-      headers: {
-        Authorization: `Bearer ${PARTICIPANT_SERVICE_TOKEN}`,
-      },
-    });
-
+    const participantSocket = connectToWebsocket(server);
     sockets.push(participantSocket);
+    await authenticateWebSocket(participantSocket, {
+      token: PARTICIPANT_SERVICE_TOKEN,
+    });
 
-    const participantNotification = new Promise<void>((resolve) => {
-      participantSocket.onopen = () => {
-        participantSocket.onmessage = (event) => {
-          const chatEvent = JSON.parse(
-            event.data as any,
-          ) as WsResponse<PublicChatMessage>;
-
-          expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
-
-          resolve();
-        };
-      };
+    const nonParticipantSocket = connectToWebsocket(server);
+    sockets.push(nonParticipantSocket);
+    await authenticateWebSocket(nonParticipantSocket, {
+      token: NON_PARTICIPANT_SERVICE_TOKEN,
     });
 
     // Does not notify non participant
-    const nonParticipantSocket = connectToWebsocket(server, {
-      headers: {
-        Authorization: `Bearer ${NON_PARTICIPANT_SERVICE_TOKEN}`,
-      },
-    });
-
-    sockets.push(nonParticipantSocket);
-
     const nonParticipantEvents: any[] = [];
 
-    nonParticipantSocket.onopen = () => {
-      nonParticipantSocket.onmessage = (event) => {
-        const chatEvent = JSON.parse(event.data as any) as WsResponse<any>;
+    nonParticipantSocket.onmessage = (event) => {
+      const chatEvent = JSON.parse(event.data as any) as WsResponse<any>;
 
-        nonParticipantEvents.push(chatEvent);
-      };
+      nonParticipantEvents.push(chatEvent);
     };
+
+    // Notifies other participant
+    const participantNotification = new Promise<void>((resolve) => {
+      participantSocket.onmessage = (event) => {
+        const chatEvent = JSON.parse(
+          event.data as any,
+        ) as WsResponse<PublicChatMessage>;
+
+        expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
+
+        resolve();
+      };
+    });
+
+    // Notifies creator
+    const creatorNotification = new Promise<void>((resolve) => {
+      creatorSocket.onmessage = (event) => {
+        const chatEvent = JSON.parse(
+          event.data as any,
+        ) as WsResponse<PublicChatMessage>;
+
+        const keys = Object.keys(chatEvent.data);
+        const expectedKeys = ['uuid', 'chat', 'sender', 'date', 'body'];
+
+        expect(keys.length).toEqual(expectedKeys.length);
+        expect(equalSet(new Set(keys), new Set(expectedKeys))).toBeTruthy();
+
+        expect(chatEvent.event).toEqual(ChatEvent.MessageCreated);
+        expect(chatEvent.data.chat).toEqual(chat.uuid);
+        expect(chatEvent.data.sender).toEqual(chatCreator.uuid);
+        expect(isValidISODateString(chatEvent.data.date)).toBeTruthy();
+        expect(chatEvent.data.body).toEqual(createMessageEventPayload.message);
+
+        message = chatEvent.data;
+
+        resolve();
+      };
+
+      creatorSocket.send(JSON.stringify(createMessageEvent));
+    });
 
     await Promise.all([creatorNotification, participantNotification]);
     expect(nonParticipantEvents.length).toEqual(0);
@@ -357,33 +342,17 @@ describe('ChatGateway (e2e) [authenticated]', () => {
       data: createMessageEventPayload,
     };
 
-    const creatorSocket = connectToWebsocket(firstServer, {
-      headers: {
-        Authorization: `Bearer ${CREATOR_SERVICE_TOKEN}`,
-      },
+    const creatorSocket = connectToWebsocket(firstServer);
+    sockets.push(creatorSocket);
+    await authenticateWebSocket(creatorSocket, {
+      token: CREATOR_SERVICE_TOKEN,
     });
 
-    const participantSocket = connectToWebsocket(secondServer, {
-      headers: {
-        Authorization: `Bearer ${PARTICIPANT_SERVICE_TOKEN}`,
-      },
+    const participantSocket = connectToWebsocket(secondServer);
+    sockets.push(participantSocket);
+    await authenticateWebSocket(participantSocket, {
+      token: PARTICIPANT_SERVICE_TOKEN,
     });
-
-    sockets.push(creatorSocket, participantSocket);
-
-    const creatorConnection = new Promise<void>((resolve) => {
-      creatorSocket.onopen = () => {
-        resolve();
-      };
-    });
-
-    const participantConnection = new Promise<void>((resolve) => {
-      participantSocket.onopen = () => {
-        resolve();
-      };
-    });
-
-    await Promise.all([creatorConnection, participantConnection]);
 
     await new Promise<void>((resolve) => {
       let creatorMessageCount = 0;

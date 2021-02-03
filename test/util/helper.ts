@@ -11,8 +11,18 @@ import { ServiceAccountName } from '../../src/app/auth/interfaces/service-accoun
 import { Plugin } from '../../src/plugins';
 import { ChatStorageProviderType } from '../../src/chat/chat.storage';
 import { ChatConfig } from '../../src/app/config/namespace/chat.config';
+import {
+  WsAuthRequestPayload,
+  WsAuthResponse,
+  WsAuthStatus,
+} from '../../src/util/authenticated-ws/authenticated-ws.dto';
+import { WsResponse } from '@nestjs/websockets';
+import { AuthenticatedWsGatewayEvent } from '../../src/util/authenticated-ws/authenticated-ws.event';
 
 // Service Accounts Config
+export const INVALID_SERVICE_TOKEN =
+  'MGUxMzAxMzhiYzg0MDQ4YjNiZmU3OThmZmVkMzBmMTQK';
+
 export const GENERIC_SERVICE_ACCOUNT_TOKEN =
   'NzYxMjg5NDEwNmNkNGYyN2M2MGRlNDM1N2VmMjJkZDEK';
 export const GENERIC_SERVICE_ACCOUNT_USER_TOKEN =
@@ -115,6 +125,46 @@ export function connectToWebsocket(
   const host = `[${address}]:${port}`;
 
   return new WebSocket(`ws://${host}`, options);
+}
+
+export async function authenticateWebSocket(
+  socket: WebSocket,
+  payload: WsAuthRequestPayload,
+): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    function authenticate(): void {
+      socket.onmessage = (event) => {
+        const wsEvent = JSON.parse(event.data as any) as WsResponse;
+
+        if (wsEvent.event !== AuthenticatedWsGatewayEvent.AuthResponse) {
+          return;
+        }
+
+        const authResponse = wsEvent.data as WsAuthResponse;
+
+        if (authResponse.status !== WsAuthStatus.Success) {
+          reject();
+        }
+
+        resolve();
+      };
+
+      const authRequest: WsResponse<WsAuthRequestPayload> = {
+        event: AuthenticatedWsGatewayEvent.AuthRequest,
+        data: payload,
+      };
+
+      socket.send(JSON.stringify(authRequest));
+    }
+
+    if (socket.readyState === WebSocket.OPEN) {
+      authenticate();
+    } else {
+      socket.onopen = () => {
+        authenticate();
+      };
+    }
+  });
 }
 
 // Chat Websocket Test

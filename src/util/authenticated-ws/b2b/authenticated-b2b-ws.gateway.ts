@@ -5,7 +5,7 @@ import * as net from 'net';
 import { HttpAdapterHost } from '@nestjs/core';
 
 // alternative: https://github.com/nestjs/nest/issues/882#issuecomment-631643591
-export abstract class AuthenticatedWsGateway<T>
+export abstract class AuthenticatedB2BWsGateway<T>
   implements OnGatewayInit<WebSocket.Server>, OnGatewayConnection {
   // MARK: - Private Properties
   private readonly adapterHost: HttpAdapterHost;
