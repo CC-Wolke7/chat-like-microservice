@@ -34,8 +34,10 @@ import {
   AuthenticatedWsGateway,
 } from '../../util/authenticated-ws/authenticated-ws.gateway';
 import { WsAuthRequestPayload } from '../../util/authenticated-ws/authenticated-ws.dto';
+import { VetShelterStrategy } from '../../app/auth/strategy/vet-shelter.strategy';
+import { AuthenticatedUser } from '../../app/auth/interfaces/user';
 
-type User = ServiceAccountUser;
+type User = ServiceAccountUser | AuthenticatedUser;
 
 // @TODO: abstract chat rooms - https://github.com/afertil/nest-chat-api
 // @TODO: detect broken/closed connections via ping/pong - https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
@@ -55,32 +57,43 @@ export class ChatGateway
   implements ChatNotificationProvider {
   // MARK: - Private Properties
   private readonly service: ChatService;
-  private readonly serviceTokenStrategy: ServiceTokenStrategy;
   private readonly broker: MessageBrokerProvider;
+
+  private readonly serviceTokenStrategy: ServiceTokenStrategy;
+  private readonly vetShelterStrategy: VetShelterStrategy;
 
   // MARK: - Initialization
   constructor(
     service: ChatService,
     serviceTokenStrategy: ServiceTokenStrategy,
+    vetShelterStrategy: VetShelterStrategy,
     @Inject(ProviderToken.CHAT_BROKER) broker: MessageBrokerProvider,
   ) {
     super();
 
     this.service = service;
-    this.serviceTokenStrategy = serviceTokenStrategy;
 
     this.broker = broker;
     this.broker.onMessage = this.onBrokerMessage.bind(this);
+
+    this.serviceTokenStrategy = serviceTokenStrategy;
+    this.vetShelterStrategy = vetShelterStrategy;
   }
 
   // MARK: - Public Methods
   // MARK: AuthenticatedWsGateway
   async verifyUser(payload: WsAuthRequestPayload): Promise<User | undefined> {
-    // @TODO: add JWT & recommender bot guard
     try {
+      // @TODO: limit to service accounts
       return this.serviceTokenStrategy.validate(
         payload.token,
       ) as ServiceAccountUser;
+    } catch {
+      //
+    }
+
+    try {
+      return this.vetShelterStrategy.validate(payload.token);
     } catch {
       //
     }

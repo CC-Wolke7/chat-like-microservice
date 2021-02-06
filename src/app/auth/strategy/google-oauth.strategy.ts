@@ -44,7 +44,6 @@ export class GoogleOAuthStrategy extends PassportStrategy(
 
   // MARK: - Public Methods
   validate(payload: GoogleOAuthIdTokenPayload): AuthenticatedUser {
-    // @TODO: convert to unique uuid
     return {
       type: UserType.User,
       uuid: payload.sub,
