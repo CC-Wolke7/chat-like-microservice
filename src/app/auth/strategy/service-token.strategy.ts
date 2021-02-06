@@ -27,7 +27,7 @@ export class ServiceTokenStrategy extends PassportStrategy(
   constructor(
     @Inject(ServiceAccountConfig.KEY) config: ServiceAccountConfigProvider,
   ) {
-    super({ session: false });
+    super();
     this.config = config;
   }
 

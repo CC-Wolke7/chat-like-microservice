@@ -29,6 +29,9 @@ export class Environment {
   @IsEnum(Plugin, { each: true })
   readonly PLUGINS?: string;
 
+  @IsString()
+  readonly VET_SHELTER_API_URL: string;
+
   @IsOptional()
   @IsString()
   readonly GCP_PROJECT_ID?: string;

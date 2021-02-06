@@ -25,6 +25,11 @@ export class ServiceTokenGuard extends AuthGuard(
 @Injectable()
 export class GoogleOAuthGuard extends AuthGuard(AuthStrategyName.GoogleOAuth) {}
 
+@Injectable()
+export class VetShelterAuthGuard extends AuthGuard(
+  AuthStrategyName.VetShelter,
+) {}
+
 // Authorization
 @Injectable()
 export class ServiceAccountUserGuard implements CanActivate {

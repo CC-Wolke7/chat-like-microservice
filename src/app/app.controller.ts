@@ -8,7 +8,7 @@ import {
   OrAuthGuard,
   AnonymousGuard,
   ServiceTokenGuard,
-  GoogleOAuthGuard,
+  VetShelterAuthGuard,
 } from './auth/auth.guard';
 
 @ApiTags('app')
@@ -26,7 +26,7 @@ export class AppController {
     new OrAuthGuard(
       new AnonymousGuard(),
       new ServiceTokenGuard(),
-      new GoogleOAuthGuard(),
+      new VetShelterAuthGuard(),
     ),
   )
   @Get('identity')
@@ -34,7 +34,9 @@ export class AppController {
     return user;
   }
 
-  @UseGuards(new OrAuthGuard(new ServiceTokenGuard(), new GoogleOAuthGuard()))
+  @UseGuards(
+    new OrAuthGuard(new ServiceTokenGuard(), new VetShelterAuthGuard()),
+  )
   @Get('auth-identity')
   getAuthenticatedIdentity(
     @User() user: AuthenticatedUserEntity,

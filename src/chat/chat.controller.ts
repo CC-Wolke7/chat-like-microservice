@@ -26,12 +26,19 @@ import { ProviderToken } from '../provider';
 import { ChatNotificationProvider } from './interfaces/notification';
 import { ApiTags } from '@nestjs/swagger';
 import {
-  GoogleOAuthGuard,
+  AndAuthGuard,
   OrAuthGuard,
+  ServiceAccountUserGuard,
   ServiceTokenGuard,
+  VetShelterAuthGuard,
 } from '../app/auth/auth.guard';
 
-@UseGuards(new OrAuthGuard(new ServiceTokenGuard(), new GoogleOAuthGuard()))
+@UseGuards(
+  new OrAuthGuard(
+    new AndAuthGuard(new ServiceTokenGuard(), new ServiceAccountUserGuard()),
+    new VetShelterAuthGuard(),
+  ),
+)
 @ApiTags('chat')
 @Controller()
 export class ChatController {

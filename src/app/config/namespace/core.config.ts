@@ -7,6 +7,9 @@ import { toArray, toSet } from '../../../util/helper';
 
 export interface CoreConfigProvider {
   plugins: Set<Plugin>;
+  vetShelter: {
+    apiUrl: string;
+  };
   gcp: {
     projectId?: string;
   };
@@ -20,6 +23,7 @@ export const CoreConfig = registerAs(
 
     const {
       PLUGINS,
+      VET_SHELTER_API_URL,
       GCP_PROJECT_ID,
       CORS_ORIGIN_WHITELIST,
       CORS_ALLOW_CREDENTIALS,
@@ -27,6 +31,9 @@ export const CoreConfig = registerAs(
 
     return {
       plugins: PLUGINS ? toSet(PLUGINS) : ALL_PLUGINS,
+      vetShelter: {
+        apiUrl: VET_SHELTER_API_URL,
+      },
       gcp: {
         projectId: GCP_PROJECT_ID,
       },

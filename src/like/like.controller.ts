@@ -9,21 +9,24 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import {
   AndAuthGuard,
-  GoogleOAuthGuard,
   OrAuthGuard,
   ServiceAccountUserGuard,
   ServiceTokenGuard,
+  VetShelterAuthGuard,
 } from '../app/auth/auth.guard';
+import { ServiceAccountUser } from '../app/auth/interfaces/service-account';
 import { AuthenticatedUser } from '../app/auth/interfaces/user';
 import { User } from '../app/auth/user.decorator';
 import { OfferUUID } from './interfaces/storage';
 import { GetOfferLikesResponse } from './like.dto';
 import { LikeService } from './like.service';
 
+type User = ServiceAccountUser | AuthenticatedUser;
+
 @UseGuards(
   new OrAuthGuard(
     new AndAuthGuard(new ServiceTokenGuard(), new ServiceAccountUserGuard()),
-    new GoogleOAuthGuard(),
+    new VetShelterAuthGuard(),
   ),
 )
 @ApiTags('like')
@@ -41,7 +44,7 @@ export class LikeController {
   @Get('offer/:offerId/likes')
   async getOfferLikes(
     @Param('offerId', ParseUUIDPipe) offer: OfferUUID,
-    @User() user: AuthenticatedUser,
+    @User() user: User,
   ): Promise<GetOfferLikesResponse> {
     const offerLikes = await this.service.getOfferLikes(offer);
     const userLike = await this.service.getOfferLike(offer, user.uuid);
@@ -55,7 +58,7 @@ export class LikeController {
   @Put('offer/:offerId/likes')
   async toggleOfferLike(
     @Param('offerId', ParseUUIDPipe) offer: OfferUUID,
-    @User() user: AuthenticatedUser,
+    @User() user: User,
   ): Promise<void> {
     return this.service.toggleOfferLike(offer, user.uuid);
   }
