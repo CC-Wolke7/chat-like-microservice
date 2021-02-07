@@ -1,0 +1,32 @@
+name: Google App Engine Deployment
+
+on: [workflow_dispatch]
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-20.04
+    steps:
+      # https://github.com/marketplace/actions/cancel-workflow-action
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      # https://github.com/google-github-actions/setup-gcloud/
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      # https://github.com/google-github-actions/deploy-appengine
+      - name: Deploy to Google App Engine
+        uses: google-github-actions/deploy-appengine@main
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          promote: true
