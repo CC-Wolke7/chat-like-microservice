@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  # https://github.com/googleapis/nodejs-firestore/issues/1296#issuecomment-697948320
+  firestore:
+    image: google/cloud-sdk:emulators
+    ports:
+      - 8970:8970
+    entrypoint: /bin/bash -c "gcloud config set project vet-shelter && /google-cloud-sdk/platform/cloud-firestore-emulator/cloud_firestore_emulator start --host=0.0.0.0 --port=8970"
+
+  # https://github.com/googleapis/nodejs-bigtable/issues/612#issuecomment-589133501
+  bigtable:
+    image: google/cloud-sdk:emulators
+    ports:
+      - 8086:8086
+    entrypoint: /bin/bash -c "gcloud config set project vet-shelter && /google-cloud-sdk/platform/bigtable-emulator/cbtemulator --host=0.0.0.0 --port=8086"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379

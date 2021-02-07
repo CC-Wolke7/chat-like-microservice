@@ -1,0 +1,39 @@
+version: '3.4'
+
+services:
+  api:
+    image: chat-like-microservice
+    build:
+      context: .
+    environment:
+      GCP_PROJECT_ID: vet-shelter
+      FIRESTORE_EMULATOR_HOST: firestore:8970
+      BIGTABLE_EMULATOR_HOST: bigtable:8086
+      PLUGINS: CHAT_API,LIKE_API
+      CHAT_STORAGE: firestore
+      CHAT_REDIS_HOST: redis
+      CHAT_REDIS_PORT: 6379
+      CHAT_REDIS_CLIENT_ID: 749fbca5-a917-4811-a9dc-e542f10faaa3
+      LIKE_STORAGE: memory
+    ports:
+      - 3000:3000
+    depends_on:
+      - firestore
+      - bigtable
+      - redis
+    command: yarn start:dev
+
+  firestore:
+    extends:
+      file: docker-compose.services.yml
+      service: firestore
+
+  bigtable:
+    extends:
+      file: docker-compose.services.yml
+      service: bigtable
+
+  redis:
+    extends:
+      file: docker-compose.services.yml
+      service: redis

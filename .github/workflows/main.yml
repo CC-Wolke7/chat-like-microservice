@@ -1,0 +1,22 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and start the Docker stack
+        run: docker-compose -f docker-compose.ci.yml up -d
+      - name: Test (Unit)
+        run: docker-compose -f docker-compose.ci.yml exec -T api yarn test:cov
+      - name: Test (E2E)
+        run: docker-compose -f docker-compose.ci.yml exec -T api yarn test:e2e
+      - name: Stop the Docker stack
+        run: docker-compose -f docker-compose.ci.yml down -v
