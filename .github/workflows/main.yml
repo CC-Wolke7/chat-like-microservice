@@ -12,11 +12,19 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+
+      # https://github.com/marketplace/actions/docker-layer-caching
+      - run: docker-compose -f docker-compose.ci.yml pull
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
       - name: Build and start the Docker stack
-        run: docker-compose -f docker-compose.ci.yml up -d
+        run: docker-compose -f docker-compose.ci.yml up -d --build
+
       - name: Test (Unit)
         run: docker-compose -f docker-compose.ci.yml exec -T api yarn test:cov
       - name: Test (E2E)
         run: docker-compose -f docker-compose.ci.yml exec -T api yarn test:e2e --forceExit
+
       - name: Stop the Docker stack
         run: docker-compose -f docker-compose.ci.yml down -v
