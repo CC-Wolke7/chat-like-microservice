@@ -12,6 +12,12 @@ jobs:
     name: Test
     runs-on: ubuntu-20.04
     steps:
+      # https://github.com/marketplace/actions/cancel-workflow-action
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{ github.token }}
+
       - name: Checkout source code
         uses: actions/checkout@v2
 
