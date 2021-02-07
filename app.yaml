@@ -1,4 +1,7 @@
+# App Engine Configuration
+# https://cloud.google.com/appengine/docs/standard/python/config/appref
 runtime: nodejs14
+service: like-api
 entrypoint: npm run start:prod
 env_variables:
   SERVER_PORT: 8080

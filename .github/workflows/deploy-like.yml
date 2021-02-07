@@ -1,6 +1,10 @@
-name: Google App Engine Deployment
+name: Like API Deployment
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
