@@ -723,13 +723,13 @@
     optional "0.1.4"
     tslib "2.0.3"
 
-"@nestjs/websockets@^7.6.5":
-  version "7.6.5"
-  resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-7.6.5.tgz#d9fac438a7909fe2ae0310560d68b2f3f4aaffae"
-  integrity sha512-PdrQtXvjFVAB8AhN4ZtfdJKtk11ds8reYWBZaDK14WSCOcjZNzdosaQ1Tde7wDA2vctPTSiQDxckIKsX80t3tQ==
+"@nestjs/websockets@^7.6.11":
+  version "7.6.11"
+  resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-7.6.11.tgz#f990ca1be4065c1ff1be16696523b5f656a81ef2"
+  integrity sha512-oXjMJwEig78ysAgE/d0x2YkVy8BwfPi4JgQMoUnDap72YwhYiVjtgtxS1WhJqXMf6YXeFWcnXlc5aqyhVV5Miw==
   dependencies:
     iterare "1.2.1"
-    tslib "2.0.3"
+    tslib "2.1.0"
 
 "@nodelib/fs.scandir@2.1.4":
   version "2.1.4"
@@ -6880,7 +6880,7 @@ tslib@2.0.3:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.0.3.tgz#8e0741ac45fc0c226e58a17bfc3e64b9bc6ca61c"
   integrity sha512-uZtkfKblCEQtZKBF6EBXVZeQNl82yqtDQdv+eck8u7tdPxjLu2/lp5/uPW+um2tpuxINHWy3GhiccY7QgEaVHQ==
 
-tslib@>=1.9.0:
+tslib@2.1.0, tslib@>=1.9.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.1.0.tgz#da60860f1c2ecaa5703ab7d39bc05b6bf988b97a"
   integrity sha512-hcVC3wYEziELGGmEEXue7D75zbwIIVUMWAVbHItGPx0ziyXxrOMQx4rQEVEV45Ut/1IotuEvwqPopzIOkDMf0A==
