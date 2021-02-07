@@ -46,6 +46,9 @@ export class Environment {
   @IsBooleanString()
   readonly CORS_ALLOW_CREDENTIALS?: string;
 
+  @IsOptional()
+  readonly SERVER_HOSTNAME?: string;
+
   // Service Account Config
   @IsOptional()
   @IsString()

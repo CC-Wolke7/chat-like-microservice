@@ -14,6 +14,9 @@ export interface CoreConfigProvider {
     projectId?: string;
   };
   cors: Pick<CorsOptions, 'origin' | 'credentials'>;
+  server: {
+    hostname?: string;
+  };
 }
 
 export const CoreConfig = registerAs(
@@ -27,6 +30,7 @@ export const CoreConfig = registerAs(
       GCP_PROJECT_ID,
       CORS_ORIGIN_WHITELIST,
       CORS_ALLOW_CREDENTIALS,
+      SERVER_HOSTNAME,
     } = environment;
 
     return {
@@ -42,6 +46,9 @@ export const CoreConfig = registerAs(
         credentials: CORS_ALLOW_CREDENTIALS
           ? Boolean(CORS_ALLOW_CREDENTIALS)
           : true,
+      },
+      server: {
+        hostname: SERVER_HOSTNAME,
       },
     };
   },

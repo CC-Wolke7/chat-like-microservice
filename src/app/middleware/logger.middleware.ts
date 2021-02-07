@@ -5,10 +5,10 @@ import { NextFunction, Request, Response } from 'express';
 export class LoggerMiddleware implements NestMiddleware {
   use(request: Request, response: Response, next: NextFunction): void {
     // @TODO: use global logger - https://docs.nestjs.com/techniques/logger
-    console.log(
-      `${request.method} ${request.path}`,
-      JSON.stringify(request.query, undefined, 4),
-    );
+    // console.log(
+    //   `${request.method} ${request.path}`,
+    //   JSON.stringify(request.query, undefined, 4),
+    // );
     next();
   }
 }

@@ -1,21 +1,28 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProviderToken } from '../../../src/provider';
-import { InMemoryChatStorage } from '../../../src/chat/storage/memory/memory-chat.storage';
-import { AppEvent } from '../../../src/app/gateway/app.gateway.event';
-import { RootModule } from '../../../src/root.module';
+import { ProviderToken } from '../../src/provider';
+import { InMemoryChatStorage } from '../../src/chat/storage/memory/memory-chat.storage';
+import { AppEvent } from '../../src/app/gateway/app.gateway.event';
+import { RootModule } from '../../src/root.module';
 import { WsResponse } from '@nestjs/websockets';
-import { HealthStatus } from '../../../src/app/interfaces/health';
+import { HealthStatus } from '../../src/app/interfaces/health';
 import {
   connectToWebsocket,
   setupWebsocketTest,
   stopWebsocketTest,
   WebsocketTestEnvironment,
-} from '../../util/helper';
+} from '../util/helper';
 import * as WebSocket from 'ws';
+import { CoreConfig } from '../../src/app/config/namespace/core.config';
 
 describe('AppGateway (e2e)', () => {
   // MARK: - Properties
+  const SERVER_PORT = 3001;
   let environment: WebsocketTestEnvironment;
+  let sockets: WebSocket[];
+
+  const {
+    server: { hostname },
+  } = CoreConfig();
 
   // MARK: - Hooks
   beforeEach(async () => {
@@ -28,17 +35,21 @@ describe('AppGateway (e2e)', () => {
       .useClass(InMemoryChatStorage)
       .compile();
 
-    environment = await setupWebsocketTest(moduleFixture, 3001);
+    environment = await setupWebsocketTest(
+      moduleFixture,
+      SERVER_PORT,
+      hostname,
+    );
   });
 
   afterEach(async () => {
-    await stopWebsocketTest(environment.app);
+    await stopWebsocketTest([environment.app], sockets);
   });
 
   // MARK: - Tests
   it(`should emit \`${AppEvent.HealthStatus}\` event with payload \`${HealthStatus.Normal}\` on '${AppEvent.HealthRequest}' event`, (done) => {
     const { server } = environment;
-    const socket = connectToWebsocket(server);
+    const socket = connectToWebsocket(server, SERVER_PORT, hostname);
 
     socket.onopen = () => {
       socket.onmessage = (event: WebSocket.MessageEvent) => {

@@ -7,6 +7,7 @@ services:
       context: .
     environment:
       GCP_PROJECT_ID: vet-shelter
+      SERVER_HOSTNAME: 0.0.0.0
       FIRESTORE_EMULATOR_HOST: firestore:8970
       BIGTABLE_EMULATOR_HOST: bigtable:8086
       PLUGINS: CHAT_API,LIKE_API

@@ -17,7 +17,7 @@ import {
 import * as nock from 'nock';
 import { CoreConfig } from '../../src/app/config/namespace/core.config';
 
-xdescribe('AppController (e2e)', () => {
+describe('AppController (e2e)', () => {
   // MARK: - Properties
   let app: INestApplication;
   const { vetShelter } = CoreConfig();
@@ -45,7 +45,9 @@ xdescribe('AppController (e2e)', () => {
     await app.init();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await app.close();
+
     // Cleanup prepared mocks (and associated state)
     nock.cleanAll();
   });

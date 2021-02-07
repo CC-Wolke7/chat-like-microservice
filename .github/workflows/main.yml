@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: ["*"]
+    branches: ['*']
   pull_request:
     branches: [main]
 
@@ -17,6 +17,6 @@ jobs:
       - name: Test (Unit)
         run: docker-compose -f docker-compose.ci.yml exec -T api yarn test:cov
       - name: Test (E2E)
-        run: docker-compose -f docker-compose.ci.yml exec -T api yarn test:e2e
+        run: docker-compose -f docker-compose.ci.yml exec -T api yarn test:e2e --forceExit
       - name: Stop the Docker stack
         run: docker-compose -f docker-compose.ci.yml down -v

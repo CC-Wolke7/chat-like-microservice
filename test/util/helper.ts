@@ -86,11 +86,18 @@ export interface WebsocketTestEnvironment {
 export async function setupWebsocketTest(
   fixture: TestingModule,
   port: number,
+  hostname?: string,
 ): Promise<WebsocketTestEnvironment> {
   const app = fixture.createNestApplication();
   app.useWebSocketAdapter(new WsAdapter(app));
 
-  const server = await app.listen(port);
+  let server: any;
+
+  if (hostname) {
+    server = await app.listen(port, hostname);
+  } else {
+    server = await app.listen(port);
+  }
 
   return {
     app,
@@ -119,12 +126,19 @@ export async function stopWebsocketTest(
 
 export function connectToWebsocket(
   server: any,
+  port: number,
+  hostname?: string,
   options?: WebSocket.ClientOptions,
 ): WebSocket {
-  const { address, port } = server.address();
-  const host = `[${address}]:${port}`;
+  let serverHost: string;
 
-  return new WebSocket(`ws://${host}`, options);
+  if (hostname) {
+    serverHost = `${hostname}:${port}`;
+  } else {
+    serverHost = `[${server.address().address}]:${port}`;
+  }
+
+  return new WebSocket(`ws://${serverHost}`, options);
 }
 
 export async function authenticateWebSocket(
@@ -171,6 +185,7 @@ export async function authenticateWebSocket(
 export async function setupChatWebsocketTest(
   port: number,
   redisClientId: string,
+  hostname?: string,
 ): Promise<WebsocketTestEnvironment> {
   const chatConfig = ChatConfig();
 
@@ -198,7 +213,11 @@ export async function setupChatWebsocketTest(
     })
     .compile();
 
-  const { app, server } = await setupWebsocketTest(moduleFixture, port);
+  const { app, server } = await setupWebsocketTest(
+    moduleFixture,
+    port,
+    hostname,
+  );
 
   return { app, server };
 }

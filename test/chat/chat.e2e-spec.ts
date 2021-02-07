@@ -57,6 +57,10 @@ describe('ChatController (e2e) [authenticated]', () => {
     await app.init();
   });
 
+  afterEach(async () => {
+    await app.close();
+  });
+
   // MARK: - Tests
   it('/chats (POST) - fails if no payload is supplied', () => {
     return request(app.getHttpServer())
