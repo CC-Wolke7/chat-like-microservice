@@ -10,7 +10,7 @@ import {
   IsUUID,
   validateSync,
 } from 'class-validator';
-import { TransformToStringArray } from '../../../test/util/decorator';
+import { TransformToStringArray } from '../../util/decorator';
 import { ChatStorageProviderType } from '../../chat/chat.storage';
 import { LikeStorageProviderType } from '../../like/like.storage';
 import { Plugin } from '../../plugins';

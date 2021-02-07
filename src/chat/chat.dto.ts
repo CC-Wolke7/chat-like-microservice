@@ -7,7 +7,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { TransformToBoolean } from '../../test/util/decorator';
+import { TransformToBoolean } from '../util/decorator';
 import { ChatMessageUUID, ChatUUID, UserUUID } from './interfaces/storage';
 
 // MARK: - Request Query
