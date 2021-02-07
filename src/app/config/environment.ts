@@ -49,6 +49,10 @@ export class Environment {
   @IsOptional()
   readonly SERVER_HOSTNAME?: string;
 
+  @IsOptional()
+  @IsNumber()
+  readonly SERVER_PORT?: number;
+
   // Service Account Config
   @IsOptional()
   @IsString()

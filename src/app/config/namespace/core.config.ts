@@ -15,6 +15,7 @@ export interface CoreConfigProvider {
   };
   cors: Pick<CorsOptions, 'origin' | 'credentials'>;
   server: {
+    port?: number;
     hostname?: string;
   };
 }
@@ -31,6 +32,7 @@ export const CoreConfig = registerAs(
       CORS_ORIGIN_WHITELIST,
       CORS_ALLOW_CREDENTIALS,
       SERVER_HOSTNAME,
+      SERVER_PORT,
     } = environment;
 
     return {
@@ -48,6 +50,7 @@ export const CoreConfig = registerAs(
           : true,
       },
       server: {
+        port: SERVER_PORT,
         hostname: SERVER_HOSTNAME,
       },
     };
