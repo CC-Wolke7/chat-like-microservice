@@ -33,7 +33,7 @@
     "@nestjs/websockets": "^7.6.11",
     "@voxpelli/passport-dummy": "^1.0.0",
     "axios": "^0.21.1",
-    "class-transformer": "^0.3.1",
+    "class-transformer": "^0.3.2",
     "class-validator": "^0.12.2",
     "cross-env": "^7.0.3",
     "jwks-rsa": "^1.12.2",
