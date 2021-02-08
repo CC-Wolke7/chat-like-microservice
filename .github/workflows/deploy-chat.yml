@@ -10,8 +10,9 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+  SERVICE_NAME: chat-api
   IMAGE_NAME: chat-like-microservice
-  IMAGE_VERSION: ${{  github.sha }}
+  IMAGE_VERSION: ${{ github.sha }}
 
 jobs:
   deploy:
@@ -38,13 +39,18 @@ jobs:
       - name: Authorize Docker push
         run: gcloud auth configure-docker
 
-      - name: Build and push container image to Google Cloud Registry
-        run: |
-          docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }} .
-          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
+      # - name: Build and push container image to Google Cloud Registry
+      #   run: |
+      #     docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }} .
+      #     docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
 
       # https://github.com/google-github-actions/deploy-cloudrun
+      # service spec (`metadata`) cannot be used due to: https://github.com/google-github-actions/deploy-cloudrun/issues/26
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v0.2.0
         with:
-          metadata: chat.service.yaml
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          region: europe-west3
+          # metadata: chat.service.yaml
+          service: ${{ env.SERVICE_NAME }}
+          image: gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:db55df0359af3e91753868214da7dec9d2157f05
