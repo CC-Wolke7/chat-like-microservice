@@ -6,6 +6,11 @@ on:
     branches:
       - main
 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+
 jobs:
   deploy:
     name: Deploy
@@ -15,7 +20,7 @@ jobs:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
         with:
-          access_token: ${{ github.token }}
+          access_token: ${{ env.GITHUB_TOKEN }}
 
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -24,14 +29,14 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@master
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          service_account_key: ${{ env.GCP_SA_KEY }}
           export_default_credentials: true
 
       # https://github.com/google-github-actions/deploy-appengine
       - name: Deploy to Google App Engine
         uses: google-github-actions/deploy-appengine@main
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
           deliverables: like.service.yaml
           promote: true
