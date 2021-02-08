@@ -3,7 +3,7 @@ import { registerAs } from '@nestjs/config';
 import { ConfigNamespace } from '../namespace';
 import { ALL_PLUGINS, Plugin } from '../../../plugins';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
-import { toArray, toSet } from '../../../util/helper';
+import { toArray, toBoolean, toSet } from '../../../util/helper';
 
 export interface CoreConfigProvider {
   plugins: Set<Plugin>;
@@ -46,7 +46,7 @@ export const CoreConfig = registerAs(
       cors: {
         origin: CORS_ORIGIN_WHITELIST ? toArray(CORS_ORIGIN_WHITELIST) : [],
         credentials: CORS_ALLOW_CREDENTIALS
-          ? Boolean(CORS_ALLOW_CREDENTIALS)
+          ? toBoolean(CORS_ALLOW_CREDENTIALS)
           : true,
       },
       server: {

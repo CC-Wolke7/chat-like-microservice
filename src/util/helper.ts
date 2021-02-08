@@ -25,3 +25,10 @@ export function toArray<T = string>(string: string): T[] {
 export function toSet<T = string>(string: string): Set<T> {
   return new Set(toArray(string));
 }
+
+export function toBoolean(string: string): boolean {
+  if (string === 'true') return true;
+  if (string === 'false') return false;
+
+  throw new TypeError('NOT_A_BOOLEAN');
+}

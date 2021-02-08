@@ -2,6 +2,7 @@ import { Environment } from '../environment';
 import { registerAs } from '@nestjs/config';
 import { ConfigNamespace } from '../namespace';
 import { ChatStorageProviderType } from '../../../chat/chat.storage';
+import { toBoolean } from '../../../util/helper';
 
 export interface ChatConfigProvider {
   storage: ChatStorageProviderType;
@@ -33,7 +34,7 @@ export const ChatConfig = registerAs(
 
     return {
       storage: CHAT_STORAGE ?? ChatStorageProviderType.InMemory,
-      brokerMode: Boolean(CHAT_BROKER_ENABLED) ?? false,
+      brokerMode: CHAT_BROKER_ENABLED ? toBoolean(CHAT_BROKER_ENABLED) : false,
       firestore: {
         host: CHAT_FIRESTORE_HOST,
         port: CHAT_FIRESTORE_PORT,
