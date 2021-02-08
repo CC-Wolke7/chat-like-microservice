@@ -13,16 +13,16 @@ spec:
             - containerPort: 3000
           env:
             - name: PLUGINS
-              value: CHAT_API
+              value: 'CHAT_API'
             - name: CORS_ORIGIN_WHITELIST
-              value: http://localhost:8001 # @TODO
+              value: 'http://localhost:8001' # @TODO
             - name: VET_SHELTER_API_URL
-              value: http://localhost:8000 # @TODO
+              value: 'http://localhost:8000' # @TODO
             - name: RECOMMENDER_BOT_TOKEN
-              value: NWYyNWI4MjVjMjc0ZmRjZWI1ZWFhYmQ4M2JlMzJiNzEK
+              value: 'NWYyNWI4MjVjMjc0ZmRjZWI1ZWFhYmQ4M2JlMzJiNzEK'
             - name: RECOMMENDER_BOT_USER_UUID
-              value: b6256195-1ac6-4146-8d75-d796447c06ad
+              value: 'b6256195-1ac6-4146-8d75-d796447c06ad'
             - name: CHAT_STORAGE
-              value: memory
+              value: 'memory'
             - name: CHAT_BROKER_ENABLED
-              value: false
+              value: 'false'
