@@ -43,4 +43,5 @@ deploy-like:
 	gcloud app deploy --appyaml like.service.yaml
 
 deploy-chat:
+	# service > permissions > add > allUsers / cloud run user
 	gcloud beta run services replace chat.service.yaml --platform managed --region europe-west3

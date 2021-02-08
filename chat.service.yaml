@@ -8,7 +8,7 @@ spec:
   template:
     spec:
       containers:
-        - image: gcr.io/awesome-nucleus-303917/chat-like-microservice:db55df0359af3e91753868214da7dec9d2157f05
+        - image: gcr.io/$GCP_PROJECT_ID/$IMAGE_NAME:$IMAGE_VERSION
           ports:
             - containerPort: 3000
           env:
