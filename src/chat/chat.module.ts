@@ -10,6 +10,7 @@ import { FirestoreChatStorage } from './storage/firestore/firestore-chat.storage
 import { InMemoryChatStorage } from './storage/memory/memory-chat.storage';
 import { PluginFactory } from '../plugins';
 import { RedisBroker } from './gateway/broker/redis-broker';
+import { MessageBrokerProvider } from './gateway/interfaces/broker';
 
 export const CLASS_FOR_CHAT_STORAGE_PROVIDER_TYPE: Record<
   ChatStorageProviderType,
@@ -21,6 +22,7 @@ export const CLASS_FOR_CHAT_STORAGE_PROVIDER_TYPE: Record<
 
 export interface ChatFactoryOptions {
   storage: ChatStorageProviderType;
+  brokerMode: boolean;
 }
 
 export class ChatModuleFactory implements PluginFactory {
@@ -33,10 +35,17 @@ export class ChatModuleFactory implements PluginFactory {
       useClass: ChatGateway,
     };
 
-    const brokerProvider: Provider = {
-      provide: ProviderToken.CHAT_BROKER,
-      useClass: RedisBroker,
-    };
+    const brokerProvider: Provider<
+      MessageBrokerProvider | undefined
+    > = options.brokerMode
+      ? {
+          provide: ProviderToken.CHAT_BROKER,
+          useClass: RedisBroker,
+        }
+      : {
+          provide: ProviderToken.CHAT_BROKER,
+          useValue: undefined,
+        };
 
     return {
       module: ChatModule,

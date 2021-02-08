@@ -16,11 +16,12 @@ async function bootstrap(): Promise<void> {
     cors: corsOptions,
     server: { port, hostname },
   } = CoreConfig();
-  const { storage: chatStorage } = ChatConfig();
+  const { storage: chatStorage, brokerMode } = ChatConfig();
   const { storage: likeStorage } = LikeConfig();
 
   const chatPluginOptions: ChatFactoryOptions = {
     storage: chatStorage,
+    brokerMode,
   };
 
   const likePluginOptions: LikeFactoryOptions = {

@@ -68,6 +68,10 @@ export class Environment {
   readonly CHAT_STORAGE?: ChatStorageProviderType;
 
   @IsOptional()
+  @IsBooleanString()
+  readonly CHAT_BROKER_ENABLED?: string;
+
+  @IsOptional()
   @IsString()
   readonly CHAT_FIRESTORE_HOST?: string;
 

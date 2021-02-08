@@ -23,7 +23,13 @@ import { CreateMessageEventPayload } from './chat.gateway.dto';
 import { ChatService } from '../chat.service';
 import { ChatException } from '../chat.exception';
 import { ServiceTokenStrategy } from '../../app/auth/strategy/service-token.strategy';
-import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Inject,
+  Optional,
+  UseFilters,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ChatGatewayExceptionFilter } from './chat.gateway.filter';
 import { BrokerMessage, MessageBrokerProvider } from './interfaces/broker';
 import { ProviderToken } from '../../provider';
@@ -57,7 +63,7 @@ export class ChatGateway
   implements ChatNotificationProvider {
   // MARK: - Private Properties
   private readonly service: ChatService;
-  private readonly broker: MessageBrokerProvider;
+  private readonly broker?: MessageBrokerProvider;
 
   private readonly serviceTokenStrategy: ServiceTokenStrategy;
   private readonly vetShelterStrategy: VetShelterStrategy;
@@ -67,14 +73,19 @@ export class ChatGateway
     service: ChatService,
     serviceTokenStrategy: ServiceTokenStrategy,
     vetShelterStrategy: VetShelterStrategy,
-    @Inject(ProviderToken.CHAT_BROKER) broker: MessageBrokerProvider,
+    @Optional()
+    @Inject(ProviderToken.CHAT_BROKER)
+    broker?: MessageBrokerProvider,
   ) {
     super();
 
     this.service = service;
 
     this.broker = broker;
-    this.broker.onMessage = this.onBrokerMessage.bind(this);
+
+    if (this.broker) {
+      this.broker.onMessage = this.onBrokerMessage.bind(this);
+    }
 
     this.serviceTokenStrategy = serviceTokenStrategy;
     this.vetShelterStrategy = vetShelterStrategy;
@@ -200,7 +211,7 @@ export class ChatGateway
     }
 
     if (disconnectedUsers.length >= 1) {
-      await this.broker.publishMessage({
+      await this.broker?.publishMessage({
         users: disconnectedUsers,
         payload,
       });

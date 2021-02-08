@@ -5,6 +5,7 @@ import { ChatStorageProviderType } from '../../../chat/chat.storage';
 
 export interface ChatConfigProvider {
   storage: ChatStorageProviderType;
+  brokerMode: boolean;
   firestore: {
     host?: string;
     port?: number;
@@ -22,6 +23,7 @@ export const ChatConfig = registerAs(
     const environment = (process.env as unknown) as Environment;
     const {
       CHAT_STORAGE,
+      CHAT_BROKER_ENABLED,
       CHAT_FIRESTORE_HOST,
       CHAT_FIRESTORE_PORT,
       CHAT_REDIS_CLIENT_ID,
@@ -31,6 +33,7 @@ export const ChatConfig = registerAs(
 
     return {
       storage: CHAT_STORAGE ?? ChatStorageProviderType.InMemory,
+      brokerMode: Boolean(CHAT_BROKER_ENABLED) ?? false,
       firestore: {
         host: CHAT_FIRESTORE_HOST,
         port: CHAT_FIRESTORE_PORT,

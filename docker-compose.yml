@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 x-api-env: &api-env
   GCP_PROJECT_ID: vet-shelter # must match value passed to emulators
@@ -7,6 +7,7 @@ x-chat-env: &chat-env
   GCP_PROJECT_ID: vet-shelter
   FIRESTORE_EMULATOR_HOST: firestore:8970
   PLUGINS: CHAT_API
+  CHAT_BROKER_ENABLED: "true"
   CHAT_STORAGE: firestore
   CHAT_REDIS_HOST: redis
   CHAT_REDIS_PORT: 6379
