@@ -186,16 +186,19 @@ export async function setupChatWebsocketTest(
   port: number,
   redisClientId: string,
   hostname?: string,
+  storage = ChatStorageProviderType.InMemory,
+  brokerMode = false,
 ): Promise<WebsocketTestEnvironment> {
   const chatConfig = ChatConfig();
 
-  const moduleFixture: TestingModule = await Test.createTestingModule({
+  const moduleFixture = await Test.createTestingModule({
     imports: [
       RootModule.register({
         plugins: new Set([Plugin.ChatApi]),
         optionsForPlugin: {
           [Plugin.ChatApi]: {
-            storage: ChatStorageProviderType.InMemory,
+            storage,
+            brokerMode,
           },
         },
       }),

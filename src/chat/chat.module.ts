@@ -30,10 +30,15 @@ export class ChatModuleFactory implements PluginFactory {
   create(options: ChatFactoryOptions): DynamicModule {
     const storageProvider = this.getStorageProvider(options.storage);
 
-    const notificationProvider: Provider = {
-      provide: ProviderToken.CHAT_NOTIFIER,
-      useClass: ChatGateway,
-    };
+    const notificationProvider: Provider = options.brokerMode
+      ? {
+          provide: ProviderToken.CHAT_NOTIFIER,
+          useClass: ChatGateway,
+        }
+      : {
+          provide: ProviderToken.CHAT_NOTIFIER,
+          useValue: undefined,
+        };
 
     const brokerProvider: Provider<
       MessageBrokerProvider | undefined

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Inject,
+  Optional,
   Param,
   ParseUUIDPipe,
   Post,
@@ -44,12 +45,14 @@ import {
 export class ChatController {
   // MARK: - Private Properties
   private readonly service: ChatService;
-  private readonly notifier: ChatNotificationProvider;
+  private readonly notifier?: ChatNotificationProvider;
 
   // MARK: - Initialization
   constructor(
     service: ChatService,
-    @Inject(ProviderToken.CHAT_NOTIFIER) notifier: ChatNotificationProvider,
+    @Optional()
+    @Inject(ProviderToken.CHAT_NOTIFIER)
+    notifier?: ChatNotificationProvider,
   ) {
     this.service = service;
     this.notifier = notifier;
@@ -78,7 +81,7 @@ export class ChatController {
       new Set(payload.participants),
     );
 
-    await this.notifier.notifyChatCreated(chat);
+    await this.notifier?.notifyChatCreated(chat);
 
     return chat;
   }
@@ -107,7 +110,7 @@ export class ChatController {
       payload.message,
     );
 
-    await this.notifier.notifyMessageCreated(chat, message);
+    await this.notifier?.notifyMessageCreated(chat, message);
 
     return message;
   }

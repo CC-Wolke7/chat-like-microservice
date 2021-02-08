@@ -24,6 +24,7 @@ import { ChatException } from '../../src/chat/chat.exception';
 import { INestApplication } from '@nestjs/common';
 import * as nock from 'nock';
 import { CoreConfig } from '../../src/app/config/namespace/core.config';
+import { ChatStorageProviderType } from '../../src/chat/chat.storage';
 
 describe('ChatGateway (e2e) [authenticated]', () => {
   // MARK: - Properties
@@ -47,6 +48,8 @@ describe('ChatGateway (e2e) [authenticated]', () => {
       SERVER_PORT,
       REDIS_CLIENT_ID_1,
       hostname,
+      ChatStorageProviderType.InMemory,
+      true,
     );
     server = newServer;
     apps = [newApp];
@@ -338,15 +341,32 @@ describe('ChatGateway (e2e) [authenticated]', () => {
   });
 
   // @TODO: run suite in band
+  // @TODO: configure shared storage
   xit('`CREATE_MESSAGE` should route message via broker', async () => {
-    const firstServer = server;
+    const brokerMode = true;
+    const storage = ChatStorageProviderType.Firestore;
+
+    const firstServerPort = 3998;
+    const { app: firstApp, server: firstServer } = await setupChatWebsocketTest(
+      firstServerPort,
+      REDIS_CLIENT_ID_1,
+      hostname,
+      storage,
+      brokerMode,
+    );
+    apps.push(firstApp);
 
     const secondServerPort = 3999;
     const {
       app: secondApp,
       server: secondServer,
-    } = await setupChatWebsocketTest(3999, REDIS_CLIENT_ID_2, hostname);
-
+    } = await setupChatWebsocketTest(
+      secondServerPort,
+      REDIS_CLIENT_ID_2,
+      hostname,
+      storage,
+      brokerMode,
+    );
     apps.push(secondApp);
 
     const createChatPayload: CreateChatPayload = {

@@ -24,3 +24,5 @@ spec:
               value: b6256195-1ac6-4146-8d75-d796447c06ad
             - name: CHAT_STORAGE
               value: memory
+            - name: CHAT_BROKER_ENABLED
+              value: false
