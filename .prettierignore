@@ -9,3 +9,4 @@ coverage/
 *.env*
 *.sh
 .gcloudignore
+.editorconfig

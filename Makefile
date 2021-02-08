@@ -10,12 +10,12 @@ DEV_PORT = 3000
 
 TEST_IMAGE_VERSION = ${VERSION}-dev
 
-.PHONY: all push dev dev-logs start-dev debug-dev stop-dev destroy-dev
+.PHONY: test-image push-test-image dev dev-logs start-dev debug-dev stop-dev destroy-dev deploy-like deploy-chat
 
 test-image:
-  docker build -t ${NAME} .
+	docker build -t ${NAME} .
 
-push-test-image: image-test
+push-test-image: test-image
 	docker tag ${NAME}:latest ${NAME}:${TEST_IMAGE_VERSION}
 	docker tag ${NAME}:latest ${REGISTRY}/${NAME}:${TEST_IMAGE_VERSION}
 	docker push ${REGISTRY}/${NAME}:${TEST_IMAGE_VERSION}
@@ -38,10 +38,9 @@ stop-dev:
 destroy-dev: stop-dev
 	docker rm ${DEV_CONTAINER_NAME}
 
-deploy-like-dev:
-  # gcloud app create
-  # gcloud app describe
-  gcloud app deploy --no-promote
+deploy-like:
+	# gcloud app create
+	gcloud app deploy --appyaml like.service.yaml
 
-deploy-chat-dev:
-  gcloud run deploy
+deploy-chat:
+	gcloud beta run services replace chat.service.yaml --platform managed --region europe-west3
