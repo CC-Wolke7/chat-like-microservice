@@ -1,4 +1,4 @@
-name: Like API Deployment
+name: Chat API Deployment
 
 on:
   workflow_dispatch:
@@ -28,10 +28,10 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
 
-      # https://github.com/google-github-actions/deploy-appengine
-      - name: Deploy to Google App Engine
-        uses: google-github-actions/deploy-appengine@main
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          deliverables: like.service.yaml
-          promote: true
+      - name: Authorize Docker push
+        run: gcloud auth configure-docker
+
+      - name: Build and push container image
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/chat-like-api:${{  github.sha }} .
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/chat-like-api:${{  github.sha }}

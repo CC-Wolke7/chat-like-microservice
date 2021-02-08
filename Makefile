@@ -1,5 +1,5 @@
-NAME = chat-microservice
-REGISTRY =
+NAME = chat-like-microservice
+REGISTRY = gcr.io/awesome-nucleus-303917
 VERSION = $(shell git describe --tags --dirty --always --long)
 
 PROJECT_ROOT = $(shell pwd)
@@ -35,3 +35,6 @@ stop-dev:
 
 destroy-dev: stop-dev
 	docker rm ${DEV_CONTAINER_NAME}
+
+deploy-like-dev:
+  gcloud app deploy --no-promote
