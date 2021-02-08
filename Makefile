@@ -8,15 +8,17 @@ DEV_IMAGE_NAME = ${NAME}-dev
 DEV_CONTAINER_NAME = ${DEV_IMAGE_NAME}
 DEV_PORT = 3000
 
+TEST_IMAGE_VERSION = ${VERSION}-dev
+
 .PHONY: all push dev dev-logs start-dev debug-dev stop-dev destroy-dev
 
-all:
-	docker build -t ${NAME} .
+test-image:
+  docker build -t ${NAME} .
 
-push:
-	docker tag ${NAME}:latest ${NAME}:${VERSION}
-	docker tag ${NAME}:latest ${REGISTRY}/${NAME}:${VERSION}
-	docker push ${REGISTRY}/${NAME}:${VERSION}
+push-test-image: image-test
+	docker tag ${NAME}:latest ${NAME}:${TEST_IMAGE_VERSION}
+	docker tag ${NAME}:latest ${REGISTRY}/${NAME}:${TEST_IMAGE_VERSION}
+	docker push ${REGISTRY}/${NAME}:${TEST_IMAGE_VERSION}
 
 dev:
 	docker build -t ${DEV_IMAGE_NAME} .
@@ -37,4 +39,9 @@ destroy-dev: stop-dev
 	docker rm ${DEV_CONTAINER_NAME}
 
 deploy-like-dev:
+  # gcloud app create
+  # gcloud app describe
   gcloud app deploy --no-promote
+
+deploy-chat-dev:
+  gcloud run deploy
