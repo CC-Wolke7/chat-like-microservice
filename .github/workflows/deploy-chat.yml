@@ -6,6 +6,13 @@ on:
     branches:
       - main
 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SA_KEY: ${{ secrets.GCP_SA_KEY }}
+  IMAGE_NAME: chat-like-microservice
+  IMAGE_VERSION: ${{  github.sha }}
+
 jobs:
   deploy:
     name: Deploy
@@ -15,7 +22,7 @@ jobs:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
         with:
-          access_token: ${{ github.token }}
+          access_token: ${{ env.GITHUB_TOKEN }}
 
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -24,14 +31,20 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@master
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          service_account_key: ${{ env.GCP_SA_KEY }}
           export_default_credentials: true
 
       - name: Authorize Docker push
         run: gcloud auth configure-docker
 
-      - name: Build and push container image
+      - name: Build and push container image to Google Cloud Registry
         run: |
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/chat-like-api:${{  github.sha }} .
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/chat-like-api:${{  github.sha }}
+          docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }} .
+          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
+
+      # https://github.com/google-github-actions/deploy-cloudrun
+      - name: Deploy to Google Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v0.2.0
+        with:
+          metadata: chat.service.yaml

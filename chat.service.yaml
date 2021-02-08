@@ -1,0 +1,26 @@
+# Cloud Run Configuration
+# https://cloud.google.com/sdk/gcloud/reference/run/deploy#OPTIONAL-FLAGS
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: chat-api
+spec:
+  template:
+    spec:
+      containers:
+        - image: gcr.io/$GCP_PROJECT_ID/$IMAGE_NAME:$IMAGE_VERSION
+          env:
+            - name: SERVER_PORT
+              value: $PORT
+            - name: PLUGINS
+              value: CHAT_API
+            - name: CORS_ORIGIN_WHITELIST
+              value: http://localhost:8001 # @TODO
+            - name: VET_SHELTER_API_URL
+              value: http://localhost:8000 # @TODO
+            - name: RECOMMENDER_BOT_TOKEN
+              value: NWYyNWI4MjVjMjc0ZmRjZWI1ZWFhYmQ4M2JlMzJiNzEK
+            - name: RECOMMENDER_BOT_USER_UUID
+              value: b6256195-1ac6-4146-8d75-d796447c06ad
+            - name: CHAT_STORAGE
+              value: memory
