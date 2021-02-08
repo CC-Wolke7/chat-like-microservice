@@ -16,6 +16,6 @@ services:
     entrypoint: /bin/bash -c "gcloud config set project vet-shelter && /google-cloud-sdk/platform/bigtable-emulator/cbtemulator --host=0.0.0.0 --port=8086"
 
   redis:
-    image: redis:alpine
+    image: redis:5-alpine
     ports:
       - 6379:6379
