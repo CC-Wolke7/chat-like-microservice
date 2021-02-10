@@ -1,5 +1,5 @@
 NAME = chat-like-microservice
-REGISTRY = gcr.io/awesome-nucleus-303917
+REGISTRY = gcr.io/wolke-sieben-fs
 VERSION = $(shell git describe --tags --dirty --always --long)
 
 PROJECT_ROOT = $(shell pwd)
