@@ -106,7 +106,7 @@ describe('AppController (e2e)', () => {
 
   it('/identity (GET) - should succeed if authenticated through vet shelter', async () => {
     const verifyTokenMock = nock(vetShelter.apiUrl)
-      .post('/api/token/verify')
+      .post('/api/token/verify/')
       .reply(200);
 
     const identity: AuthenticatedUser = (
@@ -141,7 +141,7 @@ describe('AppController (e2e)', () => {
 
   it('/auth-identity (GET) - should succeed if authenticated through vet shelter', async () => {
     const verifyTokenMock = nock(vetShelter.apiUrl)
-      .post('/api/token/verify')
+      .post('/api/token/verify/')
       .reply(200);
 
     await request(app.getHttpServer())
@@ -154,7 +154,7 @@ describe('AppController (e2e)', () => {
 
   it('/auth-identity (GET) - should fail if vet shelter authentication is invalid', async () => {
     const verifyTokenMock = nock(vetShelter.apiUrl)
-      .post('/api/token/verify')
+      .post('/api/token/verify/')
       .reply(401);
 
     await request(app.getHttpServer())

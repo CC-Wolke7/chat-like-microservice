@@ -40,7 +40,7 @@ export class VetShelterStrategy extends PassportStrategy(
 
   // MARK: - Public Methods
   async validate(token: string): Promise<AuthenticatedUser> {
-    await this.client.post(`/api/token/verify`, {
+    await this.client.post(`/api/token/verify/`, {
       token: token,
     });
 
