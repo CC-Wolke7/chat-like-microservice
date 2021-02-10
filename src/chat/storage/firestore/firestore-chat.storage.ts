@@ -9,7 +9,7 @@ import {
   ChatPrototype,
   ChatMessagePrototype,
 } from '../../interfaces/storage';
-import { Firestore } from '@google-cloud/firestore';
+import { Firestore, Settings } from '@google-cloud/firestore';
 import * as crypto from 'crypto';
 import { ChatConverter, MessageConverter } from './firestore-chat-converter';
 import {
@@ -46,11 +46,19 @@ export class FirestoreChatStorage implements ChatStorageProvider {
     @Inject(CoreConfig.KEY) { gcp: { projectId } }: CoreConfigProvider,
     @Inject(ChatConfig.KEY) { firestore: { host, port } }: ChatConfigProvider,
   ) {
-    this.firestore = new Firestore({
+    const settings: Settings = {
       projectId,
-      host,
-      port,
-    });
+    };
+
+    if (host !== undefined) {
+      settings.host = host;
+    }
+
+    if (port !== undefined) {
+      settings.port = port;
+    }
+
+    this.firestore = new Firestore(settings);
 
     this.chats = this.firestore
       .collection(FirestoreCollectionPath.Chats)

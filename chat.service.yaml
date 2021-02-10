@@ -23,6 +23,6 @@ spec:
             - name: RECOMMENDER_BOT_USER_UUID
               value: 'b6256195-1ac6-4146-8d75-d796447c06ad'
             - name: CHAT_STORAGE
-              value: 'memory'
+              value: 'firestore'
             - name: CHAT_BROKER_ENABLED
               value: 'false'
