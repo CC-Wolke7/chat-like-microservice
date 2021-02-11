@@ -75,3 +75,24 @@ This project includes GitHub workflows to deploy the Like and Chat APIs on Googl
 6. Deploy via GitHub Actions
 
 7. Allow public access to the Chat API via Cloud Run > `chat-api` service > Permissions > Add > members: `allUsers` / role: `Cloud Run Invoker`
+
+## Persistence
+
+This project offers two kind of storage methods for each API module:
+
+- Chat API: Google Firestore / In-Memory
+- Like API: Google BigTable / In-Memory
+
+To leverage the Google persistence layer, simply specify `CHAT_STORAGE=firestore` or `LIKE_STORAGE=bigtable` as deployment environment variables. Both rely on `GCP_PROJECT_ID` being set correctly.
+
+In the case of Firestore, no further configuration is needed except for [activating it](https://console.cloud.google.com/firestore) in the **native mode**.
+
+BigTable, however, must be provisioned manually. Then, set `LIKE_BIGTABLE_INSTANCE_ID` accordingly.
+
+## Real-Time Chat
+
+The Chat API module supports real-time messaging based on WebSockets. Besides that, any message or chat created through the REST API will also trigger an appropriate notification. To enable both of these features, set `CHAT_BROKER_ENABLED=true`.
+
+As the name implies, a message broker is required in order to support horizontal scaling. Currently, [Redis](https://redis.io/) is the only support backbone. Configure it via `CHAT_REDIS_HOST` and `CHAT_REDIS_PORT`. Additionally, each deployed instance should have a unique `CHAT_REDIS_CLIENT_ID` which follows the UUIDv4 standard.
+
+To provision Redis on Goolge Cloud, go to Memorystore > Redis > Create Instance and configure a v5 instance.
