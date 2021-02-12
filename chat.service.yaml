@@ -18,9 +18,9 @@ spec:
             - name: PLUGINS
               value: 'CHAT_API'
             - name: CORS_ORIGIN_WHITELIST
-              value: 'http://localhost:8001' # @TODO
+              value: 'https://cc-wolkesieben.de'
             - name: VET_SHELTER_API_URL
-              value: 'http://localhost:8000' # @TODO
+              value: 'https://app.cc-wolkesieben.de'
             - name: RECOMMENDER_BOT_TOKEN
               value: 'NWYyNWI4MjVjMjc0ZmRjZWI1ZWFhYmQ4M2JlMzJiNzEK'
             - name: RECOMMENDER_BOT_USER_UUID

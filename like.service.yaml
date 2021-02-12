@@ -5,8 +5,8 @@ entrypoint: npm run start:prod
 env_variables:
   SERVER_PORT: 8080
   PLUGINS: 'LIKE_API'
-  CORS_ORIGIN_WHITELIST: 'http://localhost:8001' # @TODO
-  VET_SHELTER_API_URL: 'http://localhost:8000' # @TODO
+  CORS_ORIGIN_WHITELIST: 'https://cc-wolkesieben.de'
+  VET_SHELTER_API_URL: 'https://app.cc-wolkesieben.de'
   RECOMMENDER_BOT_TOKEN: 'NWYyNWI4MjVjMjc0ZmRjZWI1ZWFhYmQ4M2JlMzJiNzEK'
   RECOMMENDER_BOT_USER_UUID: 'b6256195-1ac6-4146-8d75-d796447c06ad'
   LIKE_STORAGE: 'memory' # @TODO
