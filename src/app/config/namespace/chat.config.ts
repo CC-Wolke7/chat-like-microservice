@@ -15,6 +15,7 @@ export interface ChatConfigProvider {
     clientId?: string;
     host?: string;
     port?: number;
+    auth?: string;
   };
 }
 
@@ -30,6 +31,7 @@ export const ChatConfig = registerAs(
       CHAT_REDIS_CLIENT_ID,
       CHAT_REDIS_HOST,
       CHAT_REDIS_PORT,
+      CHAT_REDIS_AUTH,
     } = environment;
 
     return {
@@ -43,6 +45,7 @@ export const ChatConfig = registerAs(
         clientId: CHAT_REDIS_CLIENT_ID,
         host: CHAT_REDIS_HOST,
         port: CHAT_REDIS_PORT,
+        auth: CHAT_REDIS_AUTH,
       },
     };
   },

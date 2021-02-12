@@ -6,6 +6,9 @@ metadata:
   name: chat-api
 spec:
   template:
+    metadata:
+      annotations:
+        run.googleapis.com/vpc-access-connector: projects/wolke-sieben-fs/locations/europe-west3/connectors/chat-broker-connector
     spec:
       containers:
         - image: gcr.io/$GCP_PROJECT_ID/$IMAGE_NAME:$IMAGE_VERSION
@@ -25,4 +28,15 @@ spec:
             - name: CHAT_STORAGE
               value: 'firestore'
             - name: CHAT_BROKER_ENABLED
-              value: 'false'
+              value: 'true'
+            - name: CHAT_REDIS_CLIENT_ID
+              value: '71ac9f3b-673c-498d-ad4d-5b92d12cc2b0'
+            - name: CHAT_REDIS_HOST
+              value: '10.122.97.235'
+            - name: CHAT_REDIS_PORT
+              value: '6379'
+            - name: CHAT_REDIS_AUTH
+              value: 'a4abdb8d-8268-4353-b0d7-18781c1c266e'
+  traffic:
+    - percent: 100
+      latestRevision: true

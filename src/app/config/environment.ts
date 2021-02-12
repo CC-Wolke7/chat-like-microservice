@@ -91,6 +91,10 @@ export class Environment {
   @IsNumber()
   readonly CHAT_REDIS_PORT?: number;
 
+  @IsOptional()
+  @IsString()
+  readonly CHAT_REDIS_AUTH?: string;
+
   // Like Config
   @IsOptional()
   @IsEnum(LikeStorageProviderType)

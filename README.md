@@ -95,4 +95,4 @@ The Chat API module supports real-time messaging based on WebSockets. Besides th
 
 As the name implies, a message broker is required in order to support horizontal scaling. Currently, [Redis](https://redis.io/) is the only support backbone. Configure it via `CHAT_REDIS_HOST` and `CHAT_REDIS_PORT`. Additionally, each deployed instance should have a unique `CHAT_REDIS_CLIENT_ID` which follows the UUIDv4 standard.
 
-To provision Redis on Goolge Cloud, go to Memorystore > Redis > Create Instance and configure a v5 instance.
+To provision Redis on Goolge Cloud, go to Memorystore > Redis > Create Instance and configure a v5 instance. Note its instance ID and connect it with an authorized VPC network (e.g. project default). Then, [create a serverless VPC access connector](https://cloud.google.com/vpc/docs/configure-serverless-vpc-access#creating_a_connector) in the same region pointing to this authorized VPC network. Note the name of the connector. Finally, configure your Cloud Run instance to route requests to private IPs through this VPC connector.

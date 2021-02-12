@@ -33,7 +33,7 @@ export class RedisBroker implements MessageBrokerProvider {
   // MARK: - Initialization
   constructor(
     @Inject(ChatConfig.KEY)
-    { redis: { clientId, host, port } }: ChatConfigProvider,
+    { redis: { host, port, auth: password, clientId } }: ChatConfigProvider,
   ) {
     if (!clientId) {
       throw new Error(ChatGatewayConfigException.NoRedisClientId);
@@ -44,6 +44,7 @@ export class RedisBroker implements MessageBrokerProvider {
     const options: redis.ClientOpts = {
       host,
       port,
+      password,
     };
 
     this.publisher = redis.createClient(options);
