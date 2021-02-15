@@ -34,18 +34,19 @@ If you prefer not to develop with Docker, you can run the app natively on your s
 
 - [NodeJS 14.15+](https://www.python.org/)
 - [Yarn](https://yarnpkg.com/getting-started)
+- [Google Cloud SDK](https://cloud.google.com/sdk/docs/quickstart?hl=de)
 
 #### Steps:
 
 1. `$ yarn install --frozen-lockfile`
 2. `$ yarn start:dev`
 
-To emulate Google Firestore (via [Google Cloud SDK](https://cloud.google.com/sdk/docs/quickstart?hl=de)), run:
+To emulate Google Firestore, run:
 
 1. `gcloud beta emulators firestore start --host-port localhost:8080`
 2. `export FIRESTORE_EMULATOR_HOST=localhost:8080`.
 
-To emulate Google BigTable (via [Google Cloud SDK](https://cloud.google.com/sdk/docs/quickstart?hl=de)), run:
+To emulate Google BigTable, run:
 
 1. `gcloud beta emulators firestore start --host-port localhost:8086`
 2. `export BIGTABLE_EMULATOR_HOST=localhost:8086`.
