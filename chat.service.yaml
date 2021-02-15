@@ -9,9 +9,14 @@ spec:
     metadata:
       annotations:
         run.googleapis.com/vpc-access-connector: projects/wolke-sieben-fs/locations/europe-west3/connectors/chat-broker-connector
+        autoscaling.knative.dev/minScale: '1'
     spec:
       containers:
         - image: gcr.io/$GCP_PROJECT_ID/$IMAGE_NAME:$IMAGE_VERSION
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1000Mi
           ports:
             - containerPort: 3000
           env:
