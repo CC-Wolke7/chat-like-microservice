@@ -723,10 +723,10 @@
     optional "0.1.4"
     tslib "2.0.3"
 
-"@nestjs/websockets@^7.6.11":
-  version "7.6.11"
-  resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-7.6.11.tgz#f990ca1be4065c1ff1be16696523b5f656a81ef2"
-  integrity sha512-oXjMJwEig78ysAgE/d0x2YkVy8BwfPi4JgQMoUnDap72YwhYiVjtgtxS1WhJqXMf6YXeFWcnXlc5aqyhVV5Miw==
+"@nestjs/websockets@^7.6.12":
+  version "7.6.12"
+  resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-7.6.12.tgz#d053967d972fe5bd86bb83cbf82db86116e0eaf5"
+  integrity sha512-vR/fI1EXn1jXjxc6kcyVWVo1nRAm1pjm0Z+Bw6cgYb/Fn9JWzu45K941dc6+chfsK8WPF+DJElX8MBXXDsVNmA==
   dependencies:
     iterare "1.2.1"
     tslib "2.1.0"
