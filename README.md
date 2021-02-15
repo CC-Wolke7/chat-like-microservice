@@ -1,6 +1,8 @@
 # Chat & Like Microservices
 
-This package provides a REST and WebSocket API to chat. The OpenAPI specification is available at `http://localhost:3000/docs/`.
+[![Node.js CI](https://github.com/cc-wolke7/chat-like-microservice/workflows/Node.js%20CI/badge.svg)](https://github.com/CC-Wolke7/chat-like-microservice/actions?query=workflow%3A%22Node.js+CI%22)
+[![Chat API Deployment](https://github.com/cc-wolke7/chat-like-microservice/workflows/Chat%20API%20Deployment/badge.svg)](https://github.com/CC-Wolke7/chat-like-microservice/actions?query=workflow%3A%22Chat+API+Deployment%22)
+[![Like API Deployment](https://github.com/cc-wolke7/chat-like-microservice/workflows/Like%20API%20Deployment/badge.svg)](https://github.com/CC-Wolke7/chat-like-microservice/actions?query=workflow%3A%22Like+API+Deployment%22)
 
 ## Development
 
@@ -42,6 +44,13 @@ To emulate Google Firestore (via [Google Cloud SDK](https://cloud.google.com/sdk
 
 1. `gcloud beta emulators firestore start --host-port localhost:8080`
 2. `export FIRESTORE_EMULATOR_HOST=localhost:8080`.
+
+To emulate Google BigTable (via [Google Cloud SDK](https://cloud.google.com/sdk/docs/quickstart?hl=de)), run:
+
+1. `gcloud beta emulators firestore start --host-port localhost:8086`
+2. `export BIGTABLE_EMULATOR_HOST=localhost:8086`.
+
+See the [section on Real-Time Chat](#real-time-chat) for further steps.
 
 ## Deployment
 
@@ -95,4 +104,4 @@ The Chat API module supports real-time messaging based on WebSockets. Besides th
 
 As the name implies, a message broker is required in order to support horizontal scaling. Currently, [Redis](https://redis.io/) is the only support backbone. Configure it via `CHAT_REDIS_HOST` and `CHAT_REDIS_PORT`. Additionally, each deployed instance should have a unique `CHAT_REDIS_CLIENT_ID` which follows the UUIDv4 standard.
 
-To provision Redis on Goolge Cloud, go to Memorystore > Redis > Create Instance and configure a v5 instance. Note its instance ID and connect it with an authorized VPC network (e.g. project default). Then, [create a serverless VPC access connector](https://cloud.google.com/vpc/docs/configure-serverless-vpc-access#creating_a_connector) in the same region pointing to this authorized VPC network. Note the name of the connector. Finally, configure your Cloud Run instance to route requests to private IPs through this VPC connector.
+To provision Redis on Google Cloud, go to Memorystore > Redis > Create Instance and configure a v5 instance. Note its instance ID and connect it with an authorized VPC network (e.g. project default). Then, [create a serverless VPC access connector](https://cloud.google.com/vpc/docs/configure-serverless-vpc-access#creating_a_connector) in the same region pointing to this authorized VPC network. Note the name of the connector. Finally, configure your Cloud Run instance to route requests to private IPs through this VPC connector.
