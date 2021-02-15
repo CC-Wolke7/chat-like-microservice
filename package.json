@@ -29,7 +29,7 @@
     "@nestjs/passport": "^7.1.5",
     "@nestjs/platform-express": "^7.6.11",
     "@nestjs/platform-ws": "^7.6.11",
-    "@nestjs/swagger": "^4.7.12",
+    "@nestjs/swagger": "^4.7.13",
     "@nestjs/websockets": "^7.6.11",
     "@voxpelli/passport-dummy": "^1.0.0",
     "axios": "^0.21.1",
