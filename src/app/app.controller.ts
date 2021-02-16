@@ -43,4 +43,10 @@ export class AppController {
   ): AuthenticatedUserEntity {
     return user;
   }
+
+  // MARK: App Engine
+  @Get('_ah/warmup')
+  warmup(): void {
+    return;
+  }
 }
