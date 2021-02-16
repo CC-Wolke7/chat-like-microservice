@@ -164,4 +164,8 @@ describe('AppController (e2e)', () => {
 
     expect(verifyTokenMock.isDone()).toBeTruthy();
   });
+
+  it('/_ah/warmup (GET)', () => {
+    return request(app.getHttpServer()).get('/_ah/warmup').expect(200);
+  });
 });
