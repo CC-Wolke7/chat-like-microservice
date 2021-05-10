@@ -368,14 +368,15 @@
     pumpify "^2.0.0"
     stream-events "^1.0.2"
 
-"@google-cloud/firestore@^4.8.1":
-  version "4.8.1"
-  resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-4.8.1.tgz#bcba4d45d4d53dd4eaed5b19300ae238e65a3106"
-  integrity sha512-x/8ixlYqQuH9DoluhBj/uj3MqwoQN1lSCT2v+ieOXuh2L+8eoA7H+FF7f+UJ/D6hzo0MMWJd6q7QaBkpzp203Q==
+"@google-cloud/firestore@^4.11.0":
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-4.11.0.tgz#c7ca87235116e7439bd833739e26123732ceb77a"
+  integrity sha512-Do9WJzEkFBBB+zVFvFfrrrIFEz086lrdgKQic7XsdoTgtYtq0yMu2u3kGLyxMbdasl2c2yf49FE4YvO3AYjQMQ==
   dependencies:
     fast-deep-equal "^3.1.1"
     functional-red-black-tree "^1.0.1"
     google-gax "^2.9.2"
+    protobufjs "^6.8.6"
 
 "@google-cloud/precise-date@^2.0.1":
   version "2.0.3"
